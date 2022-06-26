@@ -1,3 +1,35 @@
+# Google Cloud Nuke
+
+Remove all resources from a Google Cloud project.
+
+> **Development Status**: Recently forked from [aws-nuke]. Absolutely does not match up in coverage. Buggy. May not cause death. Not useful at all for most users. 
+
+> This tool is greatly inspired by, follows, but may be subtly different from [aws-nuke]. It is a fork of that tool.
+
+## Why don't you just delete the project?
+
+You can delete a project in Google Cloud, but it will
+still [count soft-deleted projects against your quota for 30 days](https://cloud.google.com/resource-manager/docs/creating-managing-projects#managing_project_quotas)
+. This may not be ideal for these kinds of use cases:
+
+* Frequent automated testing of applications that require taking over a whole project.
+    * Example use
+      case: [Disposable Cloud Environment for AWS uses aws-nuke to cleanse accounts before returning them back to the clean leasing pool.](https://github.com/Optum/dce)
+    * The default project quota is 30 and while it may be trivial for some users to increase this quota, it may not be
+      trivial for smaller organizations or single-users.
+* Near complete deletion of projects that need a stable project ID or special resources to stay in place.
+    * VPN interconnects, whitelisted IP addresses, or even special entitlements granted to the project(s) from Google or
+      other Google Cloud organizations. There are certainly more resources that may fall into this category.
+* The closest thing we have to a comprehensive "emulator" of GCP. Unlike AWS, there's no "localstack" equivalent. Even then, "localstack" wasn't perfect. There are emulators for certain services from Google and third parties, but it's certainly not as comprehensive.
+
+There may be more use cases as well.
+
+[aws-nuke]: https://github.com/rebuy-de/aws-nuke
+
+*Original README follows until the project is more developed.*
+
+--- 
+
 # aws-nuke
 
 ![Build Status](https://github.com/rebuy-de/aws-nuke/workflows/Golang%20CI/badge.svg?branch=main)
