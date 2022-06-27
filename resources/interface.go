@@ -2,8 +2,6 @@ package resources
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
@@ -60,21 +58,7 @@ func GetCloudControlMapping() map[string]string {
 
 type registerOption func(name string, lister ResourceLister)
 
-func mapCloudControl(typeName string) registerOption {
-	return func(name string, lister ResourceLister) {
-		_, exists := cloudControlMapping[typeName]
-		if exists {
-			panic(fmt.Sprintf("a cloud control mapping for %s already exists", typeName))
-		}
-
-		cloudControlMapping[typeName] = name
-	}
-}
-
 func GetLister(name string) ResourceLister {
-	if strings.HasPrefix(name, "AWS::") {
-		return NewListCloudControlResource(name)
-	}
 	return resourceListers[name]
 }
 
@@ -85,8 +69,4 @@ func GetListerNames() []string {
 	}
 
 	return names
-}
-
-func registerCloudControl(typeName string) {
-	register(typeName, NewListCloudControlResource(typeName), mapCloudControl(typeName))
 }
