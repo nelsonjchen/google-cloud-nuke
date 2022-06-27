@@ -22,9 +22,9 @@ func NewRootCommand() *cobra.Command {
 	)
 
 	command := &cobra.Command{
-		Use:   "aws-nuke",
-		Short: "aws-nuke removes every resource from AWS",
-		Long:  `A tool which removes every resource from an AWS account.  Use it with caution, since it cannot distinguish between production and non-production.`,
+		Use:   "google-cloud-nuke",
+		Short: "google-cloud-nuke removes every resource from a Google Cloud project",
+		Long:  `A tool which removes every resource from a Google Cloud project.  Use it with caution, since it cannot distinguish between production and non-production.`,
 	}
 
 	command.PreRun = func(cmd *cobra.Command, args []string) {
@@ -56,7 +56,7 @@ func NewRootCommand() *cobra.Command {
 
 		command.SilenceUsage = true
 
-		config, err := config.Load(params.ConfigPath)
+		nukeConfig, err := config.Load(params.ConfigPath)
 		if err != nil {
 			log.Errorf("Failed to parse config file %s", params.ConfigPath)
 			return err
@@ -70,7 +70,7 @@ func NewRootCommand() *cobra.Command {
 			case endpoints.UsGovEast1RegionID, endpoints.UsGovWest1RegionID:
 				awsutil.DefaultAWSPartitionID = endpoints.AwsUsGovPartitionID
 			default:
-				if config.CustomEndpoints.GetRegion(defaultRegion) == nil {
+				if nukeConfig.CustomEndpoints.GetRegion(defaultRegion) == nil {
 					err = fmt.Errorf("The custom region '%s' must be specified in the configuration 'endpoints'", defaultRegion)
 					log.Error(err.Error())
 					return err
@@ -78,14 +78,14 @@ func NewRootCommand() *cobra.Command {
 			}
 		}
 
-		account, err := awsutil.NewAccount(creds, config.CustomEndpoints)
+		account, err := awsutil.NewAccount(creds, nukeConfig.CustomEndpoints)
 		if err != nil {
 			return err
 		}
 
 		n := NewNuke(params, *account)
 
-		n.Config = config
+		n.Config = nukeConfig
 
 		return n.Run()
 	}
