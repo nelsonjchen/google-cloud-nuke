@@ -4,3 +4,6 @@
 /dist
 /releases
 /mocks
+
+# IDE
+.idea/
