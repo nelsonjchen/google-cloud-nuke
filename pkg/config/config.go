@@ -12,23 +12,20 @@ import (
 )
 
 type ResourceTypes struct {
-	Targets      types.Collection `yaml:"targets"`
-	Excludes     types.Collection `yaml:"excludes"`
-	CloudControl types.Collection `yaml:"cloud-control"`
+	Targets  types.Collection `yaml:"targets"`
+	Excludes types.Collection `yaml:"excludes"`
 }
 
-type Account struct {
+type Project struct {
 	Filters       Filters       `yaml:"filters"`
 	ResourceTypes ResourceTypes `yaml:"resource-types"`
 	Presets       []string      `yaml:"presets"`
 }
 
 type Nuke struct {
-	// Deprecated: Use AccountBlocklist instead.
-	AccountBlacklist []string                     `yaml:"account-blacklist"`
 	AccountBlocklist []string                     `yaml:"account-blocklist"`
 	Regions          []string                     `yaml:"regions"`
-	Accounts         map[string]Account           `yaml:"accounts"`
+	Accounts         map[string]Project           `yaml:"accounts"`
 	ResourceTypes    ResourceTypes                `yaml:"resource-types"`
 	Presets          map[string]PresetDefinitions `yaml:"presets"`
 	FeatureFlags     FeatureFlags                 `yaml:"feature-flags"`
@@ -88,12 +85,7 @@ func Load(path string) (*Nuke, error) {
 }
 
 func (c *Nuke) ResolveBlocklist() []string {
-	if c.AccountBlocklist != nil {
-		return c.AccountBlocklist
-	}
-
-	log.Warn("deprecated configuration key 'account-blacklist' - please use 'account-blocklist' instead")
-	return c.AccountBlacklist
+	return c.AccountBlocklist
 }
 
 func (c *Nuke) HasBlocklist() bool {

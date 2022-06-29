@@ -26,21 +26,8 @@ func Prompt(expect string) error {
 }
 
 func ResolveResourceTypes(
-	base types.Collection, mapping map[string]string,
-	include, exclude, cloudControl []types.Collection) types.Collection {
-
-	for _, cl := range cloudControl {
-		oldStyle := types.Collection{}
-		for _, c := range cl {
-			os, found := mapping[c]
-			if found {
-				oldStyle = append(oldStyle, os)
-			}
-		}
-
-		base = base.Union(cl)
-		base = base.Remove(oldStyle)
-	}
+	base types.Collection,
+	include, exclude []types.Collection) types.Collection {
 
 	for _, i := range include {
 		if len(i) > 0 {

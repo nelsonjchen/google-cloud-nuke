@@ -139,7 +139,6 @@ func (n *Nuke) Scan() error {
 
 	resourceTypes := ResolveResourceTypes(
 		resources.GetListerNames(),
-		resources.GetCloudControlMapping(),
 		[]types.Collection{
 			n.Parameters.Targets,
 			n.Config.ResourceTypes.Targets,
@@ -149,11 +148,6 @@ func (n *Nuke) Scan() error {
 			n.Parameters.Excludes,
 			n.Config.ResourceTypes.Excludes,
 			accountConfig.ResourceTypes.Excludes,
-		},
-		[]types.Collection{
-			n.Parameters.CloudControl,
-			n.Config.ResourceTypes.CloudControl,
-			accountConfig.ResourceTypes.CloudControl,
 		},
 	)
 
