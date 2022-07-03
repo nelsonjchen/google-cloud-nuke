@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rebuy-de/aws-nuke/v2/pkg/awsutil"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
+	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 	"github.com/rebuy-de/aws-nuke/v2/resources"
 	"github.com/sirupsen/logrus"
@@ -153,25 +153,23 @@ func (n *Nuke) Scan() error {
 
 	queue := make(Queue, 0)
 
-	for _, regionName := range n.Config.Regions {
-		region := NewRegion(regionName, n.Account.ResourceTypeToServiceType, n.Account.NewSession)
+	region := NewRegion("temp", n.Account.ResourceTypeToServiceType, n.Account.NewSession)
 
-		items := Scan(region, resourceTypes)
-		for item := range items {
-			ffGetter, ok := item.Resource.(resources.FeatureFlagGetter)
-			if ok {
-				ffGetter.FeatureFlags(n.Config.FeatureFlags)
-			}
+	items := Scan(region, resourceTypes)
+	for item := range items {
+		ffGetter, ok := item.Resource.(resources.FeatureFlagGetter)
+		if ok {
+			ffGetter.FeatureFlags(n.Config.FeatureFlags)
+		}
 
-			queue = append(queue, item)
-			err := n.Filter(item)
-			if err != nil {
-				return err
-			}
+		queue = append(queue, item)
+		err := n.Filter(item)
+		if err != nil {
+			return err
+		}
 
-			if item.State != ItemStateFiltered || !n.Parameters.Quiet {
-				item.Print()
-			}
+		if item.State != ItemStateFiltered || !n.Parameters.Quiet {
+			item.Print()
 		}
 	}
 

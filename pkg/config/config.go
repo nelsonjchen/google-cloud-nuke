@@ -24,23 +24,18 @@ type Project struct {
 
 type Nuke struct {
 	AccountBlocklist []string                     `yaml:"account-blocklist"`
-	Regions          []string                     `yaml:"regions"`
 	Accounts         map[string]Project           `yaml:"accounts"`
 	ResourceTypes    ResourceTypes                `yaml:"resource-types"`
 	Presets          map[string]PresetDefinitions `yaml:"presets"`
 	FeatureFlags     FeatureFlags                 `yaml:"feature-flags"`
-	CustomEndpoints  CustomEndpoints              `yaml:"endpoints"`
 }
 
 type FeatureFlags struct {
-	DisableDeletionProtection  DisableDeletionProtection `yaml:"disable-deletion-protection"`
-	ForceDeleteLightsailAddOns bool                      `yaml:"force-delete-lightsail-addons"`
+	DisableDeletionProtection DisableDeletionProtection `yaml:"disable-deletion-protection"`
 }
 
 type DisableDeletionProtection struct {
-	RDSInstance         bool `yaml:"RDSInstance"`
-	EC2Instance         bool `yaml:"EC2Instance"`
-	CloudformationStack bool `yaml:"CloudformationStack"`
+	ComputeEngineInstance bool `yaml:"EC2Instance"`
 }
 
 type PresetDefinitions struct {
