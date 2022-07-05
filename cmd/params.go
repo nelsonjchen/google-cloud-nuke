@@ -7,6 +7,7 @@ import (
 
 type NukeParameters struct {
 	ConfigPath string
+	ProjectId  string
 
 	Targets      []string
 	Excludes     []string

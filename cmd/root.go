@@ -49,12 +49,12 @@ func NewRootCommand() *cobra.Command {
 			return err
 		}
 
-		account, err := gcputil.NewProject()
+		project, err := gcputil.NewProject(params.ProjectId)
 		if err != nil {
 			return err
 		}
 
-		n := NewNuke(params, *account)
+		n := NewNuke(params, *project)
 
 		n.Config = nukeConfig
 
@@ -69,6 +69,10 @@ func NewRootCommand() *cobra.Command {
 		&params.ConfigPath, "config", "c", "",
 		"(required) Path to the nuke config file.")
 
+	command.PersistentFlags().StringVarP(
+		&params.ProjectId, "project", "p", "",
+		"(required) ProjectId ID to nuke")
+
 	command.PersistentFlags().StringSliceVarP(
 		&params.Targets, "target", "t", []string{},
 		"Limit nuking to certain resource types (eg IAMServerCertificate). "+
@@ -76,12 +80,6 @@ func NewRootCommand() *cobra.Command {
 	command.PersistentFlags().StringSliceVarP(
 		&params.Excludes, "exclude", "e", []string{},
 		"Prevent nuking of certain resource types (eg IAMServerCertificate). "+
-			"This flag can be used multiple times.")
-	command.PersistentFlags().StringSliceVar(
-		&params.CloudControl, "cloud-control", []string{},
-		"Nuke given resource via Cloud Control API. "+
-			"If there is an old-style method for the same resource, the old-style one will not be executed. "+
-			"Note that old-style and cloud-control filters are not compatible! "+
 			"This flag can be used multiple times.")
 	command.PersistentFlags().BoolVar(
 		&params.NoDryRun, "no-dry-run", false,
