@@ -61,7 +61,7 @@ func TestResolveResourceTypes(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := ResolveResourceTypes(tc.base, tc.mapping, tc.include, tc.exclude, tc.cloudControl)
+			r := ResolveResourceTypes(tc.base, tc.mapping, tc.include, tc.exclude)
 
 			sort.Strings(r)
 			sort.Strings(tc.result)

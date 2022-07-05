@@ -2,12 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"sort"
 
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/awsutil"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
+	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
 	"github.com/rebuy-de/aws-nuke/v2/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -15,10 +13,8 @@ import (
 
 func NewRootCommand() *cobra.Command {
 	var (
-		params        NukeParameters
-		creds         awsutil.Credentials
-		defaultRegion string
-		verbose       bool
+		params  NukeParameters
+		verbose bool
 	)
 
 	command := &cobra.Command{
@@ -45,15 +41,6 @@ func NewRootCommand() *cobra.Command {
 			return err
 		}
 
-		if !creds.HasKeys() && !creds.HasProfile() && defaultRegion != "" {
-			creds.AccessKeyID = os.Getenv("AWS_ACCESS_KEY_ID")
-			creds.SecretAccessKey = os.Getenv("AWS_SECRET_ACCESS_KEY")
-		}
-		err = creds.Validate()
-		if err != nil {
-			return err
-		}
-
 		command.SilenceUsage = true
 
 		nukeConfig, err := config.Load(params.ConfigPath)
@@ -62,23 +49,7 @@ func NewRootCommand() *cobra.Command {
 			return err
 		}
 
-		if defaultRegion != "" {
-			awsutil.DefaultRegionID = defaultRegion
-			switch defaultRegion {
-			case endpoints.UsEast1RegionID, endpoints.UsEast2RegionID, endpoints.UsWest1RegionID, endpoints.UsWest2RegionID:
-				awsutil.DefaultAWSPartitionID = endpoints.AwsPartitionID
-			case endpoints.UsGovEast1RegionID, endpoints.UsGovWest1RegionID:
-				awsutil.DefaultAWSPartitionID = endpoints.AwsUsGovPartitionID
-			default:
-				if nukeConfig.CustomEndpoints.GetRegion(defaultRegion) == nil {
-					err = fmt.Errorf("The custom region '%s' must be specified in the configuration 'endpoints'", defaultRegion)
-					log.Error(err.Error())
-					return err
-				}
-			}
-		}
-
-		account, err := awsutil.NewAccount(creds, nukeConfig.CustomEndpoints)
+		account, err := gcputil.NewProject()
 		if err != nil {
 			return err
 		}
@@ -97,34 +68,6 @@ func NewRootCommand() *cobra.Command {
 	command.PersistentFlags().StringVarP(
 		&params.ConfigPath, "config", "c", "",
 		"(required) Path to the nuke config file.")
-
-	command.PersistentFlags().StringVar(
-		&creds.Profile, "profile", "",
-		"Name of the AWS profile name for accessing the AWS API. "+
-			"Cannot be used together with --access-key-id and --secret-access-key.")
-	command.PersistentFlags().StringVar(
-		&creds.AccessKeyID, "access-key-id", "",
-		"AWS access key ID for accessing the AWS API. "+
-			"Must be used together with --secret-access-key. "+
-			"Cannot be used together with --profile.")
-	command.PersistentFlags().StringVar(
-		&creds.SecretAccessKey, "secret-access-key", "",
-		"AWS secret access key for accessing the AWS API. "+
-			"Must be used together with --access-key-id. "+
-			"Cannot be used together with --profile.")
-	command.PersistentFlags().StringVar(
-		&creds.SessionToken, "session-token", "",
-		"AWS session token for accessing the AWS API. "+
-			"Must be used together with --access-key-id and --secret-access-key. "+
-			"Cannot be used together with --profile.")
-	command.PersistentFlags().StringVar(
-		&creds.AssumeRoleArn, "assume-role-arn", "",
-		"AWS IAM role arn to assume. "+
-			"The credentials provided via --access-key-id or --profile must "+
-			"be allowed to assume this role. ")
-	command.PersistentFlags().StringVar(
-		&defaultRegion, "default-region", "",
-		"Custom default region name.")
 
 	command.PersistentFlags().StringSliceVarP(
 		&params.Targets, "target", "t", []string{},

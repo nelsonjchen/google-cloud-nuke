@@ -1,4 +1,4 @@
-package awsutil
+package gcputil
 
 import (
 	"strings"
@@ -6,7 +6,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/pkg/errors"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
 )
 
 type Account struct {
@@ -16,8 +15,7 @@ type Account struct {
 	aliases []string
 }
 
-func NewAccount(creds Credentials, endpoints config.CustomEndpoints) (*Account, error) {
-	creds.CustomEndpoints = endpoints
+func NewAccount(creds Credentials) (*Account, error) {
 	account := Account{
 		Credentials: creds,
 	}

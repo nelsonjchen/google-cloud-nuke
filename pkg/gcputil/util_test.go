@@ -1,10 +1,10 @@
-package awsutil_test
+package gcputil_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/rebuy-de/aws-nuke/v2/pkg/awsutil"
+	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
 )
 
 func TestSecretRegex(t *testing.T) {
@@ -26,7 +26,7 @@ func TestSecretRegex(t *testing.T) {
 	for i, tc := range cases {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			want := tc.out
-			have := string(awsutil.HideSecureHeaders([]byte(tc.in)))
+			have := string(gcputil.HideSecureHeaders([]byte(tc.in)))
 
 			if want != have {
 				t.Errorf("Assertion failed. Want: %#v. Have: %#v", want, have)
