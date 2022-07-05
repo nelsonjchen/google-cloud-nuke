@@ -7,7 +7,6 @@ import (
 
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -23,8 +22,8 @@ type Project struct {
 }
 
 type Nuke struct {
-	AccountBlocklist []string                     `yaml:"account-blocklist"`
-	Accounts         map[string]Project           `yaml:"accounts"`
+	ProjectBlacklist []string                     `yaml:"project-blocklist"`
+	Projects         map[string]Project           `yaml:"projects"`
 	ResourceTypes    ResourceTypes                `yaml:"resource-types"`
 	Presets          map[string]PresetDefinitions `yaml:"presets"`
 	FeatureFlags     FeatureFlags                 `yaml:"feature-flags"`
@@ -35,28 +34,12 @@ type FeatureFlags struct {
 }
 
 type DisableDeletionProtection struct {
-	ComputeEngineInstance bool `yaml:"EC2Instance"`
+	ComputeEngineInstance bool `yaml:"CEInstance"`
 }
 
 type PresetDefinitions struct {
 	Filters Filters `yaml:"filters"`
 }
-
-type CustomService struct {
-	Service               string `yaml:"service"`
-	URL                   string `yaml:"url"`
-	TLSInsecureSkipVerify bool   `yaml:"tls_insecure_skip_verify"`
-}
-
-type CustomServices []*CustomService
-
-type CustomRegion struct {
-	Region                string         `yaml:"region"`
-	Services              CustomServices `yaml:"services"`
-	TLSInsecureSkipVerify bool           `yaml:"tls_insecure_skip_verify"`
-}
-
-type CustomEndpoints []*CustomRegion
 
 func Load(path string) (*Nuke, error) {
 	var err error
@@ -80,7 +63,7 @@ func Load(path string) (*Nuke, error) {
 }
 
 func (c *Nuke) ResolveBlocklist() []string {
-	return c.AccountBlocklist
+	return c.ProjectBlacklist
 }
 
 func (c *Nuke) HasBlocklist() bool {
@@ -98,52 +81,44 @@ func (c *Nuke) InBlocklist(searchID string) bool {
 	return false
 }
 
-func (c *Nuke) ValidateAccount(accountID string, aliases []string) error {
+func (c *Nuke) ValidateProject(projectId string, name string) error {
 	if !c.HasBlocklist() {
-		return fmt.Errorf("The config file contains an empty blocklist. " +
-			"For safety reasons you need to specify at least one account ID. " +
-			"This should be your production account.")
+		return fmt.Errorf("the config file contains an empty blocklist. " +
+			"For safety reasons you need to specify at least one project ID. " +
+			"This should be your production project(s)")
 	}
 
-	if c.InBlocklist(accountID) {
-		return fmt.Errorf("You are trying to nuke the account with the ID %s, "+
-			"but it is blocklisted. Aborting.", accountID)
+	if c.InBlocklist(projectId) {
+		return fmt.Errorf("you are trying to nuke the project with the ID %s, "+
+			"but it is blocklisted. Aborting", projectId)
 	}
 
-	if len(aliases) == 0 {
-		return fmt.Errorf("The specified account doesn't have an alias. " +
-			"For safety reasons you need to specify an account alias. " +
-			"Your production account should contain the term 'prod'.")
+	if strings.Contains(strings.ToLower(name), "prod") {
+		return fmt.Errorf("you are trying to nuke an project with the alias '%s', "+
+			"but it has the substring 'prod' in it. Aborting", name)
 	}
 
-	for _, alias := range aliases {
-		if strings.Contains(strings.ToLower(alias), "prod") {
-			return fmt.Errorf("You are trying to nuke an account with the alias '%s', "+
-				"but it has the substring 'prod' in it. Aborting.", alias)
-		}
-	}
-
-	if _, ok := c.Accounts[accountID]; !ok {
-		return fmt.Errorf("Your account ID '%s' isn't listed in the config. "+
-			"Aborting.", accountID)
+	if _, ok := c.Projects[projectId]; !ok {
+		return fmt.Errorf("your project ID '%s' isn't listed in the config. "+
+			"Aborting", projectId)
 	}
 
 	return nil
 }
 
-func (c *Nuke) Filters(accountID string) (Filters, error) {
-	account := c.Accounts[accountID]
-	filters := account.Filters
+func (c *Nuke) Filters(projectId string) (Filters, error) {
+	project := c.Projects[projectId]
+	filters := project.Filters
 
 	if filters == nil {
 		filters = Filters{}
 	}
 
-	if account.Presets == nil {
+	if project.Presets == nil {
 		return filters, nil
 	}
 
-	for _, presetName := range account.Presets {
+	for _, presetName := range project.Presets {
 		notFound := fmt.Errorf("Could not find filter preset '%s'", presetName)
 		if c.Presets == nil {
 			return nil, notFound
@@ -161,83 +136,5 @@ func (c *Nuke) Filters(accountID string) (Filters, error) {
 }
 
 func (c *Nuke) resolveDeprecations() error {
-	deprecations := map[string]string{
-		"EC2DhcpOptions":                "EC2DHCPOptions",
-		"EC2InternetGatewayAttachement": "EC2InternetGatewayAttachment",
-		"EC2NatGateway":                 "EC2NATGateway",
-		"EC2Vpc":                        "EC2VPC",
-		"EC2VpcEndpoint":                "EC2VPCEndpoint",
-		"EC2VpnConnection":              "EC2VPNConnection",
-		"EC2VpnGateway":                 "EC2VPNGateway",
-		"EC2VpnGatewayAttachement":      "EC2VPNGatewayAttachment",
-		"ECRrepository":                 "ECRRepository",
-		"IamGroup":                      "IAMGroup",
-		"IamGroupPolicyAttachement":     "IAMGroupPolicyAttachment",
-		"IamInstanceProfile":            "IAMInstanceProfile",
-		"IamInstanceProfileRole":        "IAMInstanceProfileRole",
-		"IamPolicy":                     "IAMPolicy",
-		"IamRole":                       "IAMRole",
-		"IamRolePolicyAttachement":      "IAMRolePolicyAttachment",
-		"IamServerCertificate":          "IAMServerCertificate",
-		"IamUser":                       "IAMUser",
-		"IamUserAccessKeys":             "IAMUserAccessKey",
-		"IamUserGroupAttachement":       "IAMUserGroupAttachment",
-		"IamUserPolicyAttachement":      "IAMUserPolicyAttachment",
-		"RDSCluster":                    "RDSDBCluster",
-	}
-
-	for _, a := range c.Accounts {
-		for resourceType, resources := range a.Filters {
-			replacement, ok := deprecations[resourceType]
-			if !ok {
-				continue
-			}
-			log.Warnf("deprecated resource type '%s' - converting to '%s'\n", resourceType, replacement)
-
-			if _, ok := a.Filters[replacement]; ok {
-				return fmt.Errorf("using deprecated resource type and replacement: '%s','%s'", resourceType, replacement)
-			}
-
-			a.Filters[replacement] = resources
-			delete(a.Filters, resourceType)
-		}
-	}
 	return nil
-}
-
-// GetRegion returns the custom region or nil when no such custom endpoints are defined for this region
-func (endpoints CustomEndpoints) GetRegion(region string) *CustomRegion {
-	for _, r := range endpoints {
-		if r.Region == region {
-			if r.TLSInsecureSkipVerify {
-				for _, s := range r.Services {
-					s.TLSInsecureSkipVerify = r.TLSInsecureSkipVerify
-				}
-			}
-			return r
-		}
-	}
-	return nil
-}
-
-// GetService returns the custom region or nil when no such custom endpoints are defined for this region
-func (services CustomServices) GetService(serviceType string) *CustomService {
-	for _, s := range services {
-		if serviceType == s.Service {
-			return s
-		}
-	}
-	return nil
-}
-
-func (endpoints CustomEndpoints) GetURL(region, serviceType string) string {
-	r := endpoints.GetRegion(region)
-	if r == nil {
-		return ""
-	}
-	s := r.Services.GetService(serviceType)
-	if s == nil {
-		return ""
-	}
-	return s.URL
 }
