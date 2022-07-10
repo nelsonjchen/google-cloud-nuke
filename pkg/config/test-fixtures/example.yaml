@@ -1,20 +1,7 @@
 ---
-regions:
-- "eu-west-1"
-- stratoscale
-
-account-blocklist:
+project-blocklist:
 - 1234567890
 
-endpoints:
-- region: stratoscale
-  tls_insecure_skip_verify: true
-  services:
-  - service: ec2
-    url: https://stratoscale.cloud.internal/api/v2/aws/ec2
-  - service: s3
-    url: https://stratoscale.cloud.internal:1060
-    tls_insecure_skip_verify: true
 
 resource-types:
   targets:
@@ -24,7 +11,7 @@ resource-types:
   excludes:
   - IAMRole
 
-accounts:
+projects:
   555133742:
     presets:
     - "terraform"

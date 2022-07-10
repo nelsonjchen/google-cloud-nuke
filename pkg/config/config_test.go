@@ -108,7 +108,6 @@ func TestConfigValidation(t *testing.T) {
 		{ID: "1234567890", Name: "staging", ShouldFail: true},
 		{ID: "1111111111", Name: "staging", ShouldFail: true},
 		{ID: "555133742", Name: "production", ShouldFail: true},
-		{ID: "555133742", Name: "staging", ShouldFail: true},
 	}
 
 	for i, tc := range cases {
@@ -122,17 +121,6 @@ func TestConfigValidation(t *testing.T) {
 				t.Fatalf("Didn't excpect an error, but got one: %v", err)
 			}
 		})
-	}
-}
-
-func TestDeprecatedConfigKeys(t *testing.T) {
-	config, err := Load("test-fixtures/deprecated-keys-config.yaml")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !config.InBlocklist("1234567890") {
-		t.Errorf("Loading the config did not resolve the deprecated key 'account-blacklist' correctly")
 	}
 }
 
