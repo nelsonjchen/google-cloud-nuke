@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
 	"time"
 
 	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 	"github.com/rebuy-de/aws-nuke/v2/resources"
 	"github.com/sirupsen/logrus"
@@ -13,7 +13,7 @@ import (
 
 type Nuke struct {
 	Parameters NukeParameters
-	Account    awsutil.Account
+	Project    gcputil.Project
 	Config     *config.Nuke
 
 	ResourceTypes types.Collection
@@ -21,10 +21,10 @@ type Nuke struct {
 	items Queue
 }
 
-func NewNuke(params NukeParameters, account awsutil.Account) *Nuke {
+func NewNuke(params NukeParameters, project gcputil.Project) *Nuke {
 	n := Nuke{
 		Parameters: params,
-		Account:    account,
+		Project:    project,
 	}
 
 	return &n
@@ -40,19 +40,19 @@ func (n *Nuke) Run() error {
 
 	fmt.Printf("aws-nuke version %s - %s - %s\n\n", BuildVersion, BuildDate, BuildHash)
 
-	err = n.Config.ValidateAccount(n.Account.ID(), n.Account.Aliases())
+	err = n.Config.ValidateProject(n.Project.ID(), n.Project.Name())
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Do you really want to nuke the account with "+
-		"the ID %s and the alias '%s'?\n", n.Account.ID(), n.Account.Alias())
+	fmt.Printf("Do you really want to nuke the project with "+
+		"the ID %s and the name '%s'?\n", n.Project.ID(), n.Project.Name)
 	if n.Parameters.Force {
 		fmt.Printf("Waiting %v before continuing.\n", forceSleep)
 		time.Sleep(forceSleep)
 	} else {
 		fmt.Printf("Do you want to continue? Enter account alias to continue.\n")
-		err = Prompt(n.Account.Alias())
+		err = Prompt(n.Project.Name())
 		if err != nil {
 			return err
 		}
@@ -74,13 +74,13 @@ func (n *Nuke) Run() error {
 	}
 
 	fmt.Printf("Do you really want to nuke these resources on the account with "+
-		"the ID %s and the alias '%s'?\n", n.Account.ID(), n.Account.Alias())
+		"the ID %s and the alias '%s'?\n", n.Project.ID(), n.Project.Name())
 	if n.Parameters.Force {
 		fmt.Printf("Waiting %v before continuing.\n", forceSleep)
 		time.Sleep(forceSleep)
 	} else {
-		fmt.Printf("Do you want to continue? Enter account alias to continue.\n")
-		err = Prompt(n.Account.Alias())
+		fmt.Printf("Do you want to continue? Enter project name to continue.\n")
+		err = Prompt(n.Project.Name())
 		if err != nil {
 			return err
 		}
@@ -135,7 +135,7 @@ func (n *Nuke) Run() error {
 }
 
 func (n *Nuke) Scan() error {
-	accountConfig := n.Config.Accounts[n.Account.ID()]
+	accountConfig := n.Config.Projects[n.Project.ID()]
 
 	resourceTypes := ResolveResourceTypes(
 		resources.GetListerNames(),
@@ -153,7 +153,7 @@ func (n *Nuke) Scan() error {
 
 	queue := make(Queue, 0)
 
-	region := NewRegion("temp", n.Account.ResourceTypeToServiceType, n.Account.NewSession)
+	region := NewRegion("temp", n.Project.ResourceTypeToServiceType, n.Project.NewSession)
 
 	items := Scan(region, resourceTypes)
 	for item := range items {
@@ -197,7 +197,7 @@ func (n *Nuke) Filter(item *Item) error {
 		}
 	}
 
-	accountFilters, err := n.Config.Filters(n.Account.ID())
+	accountFilters, err := n.Config.Filters(n.Project.ID())
 	if err != nil {
 		return err
 	}
