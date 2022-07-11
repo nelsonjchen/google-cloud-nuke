@@ -34,7 +34,7 @@ func (n *Nuke) Run() error {
 	var err error
 
 	if n.Parameters.ForceSleep < 3 {
-		return fmt.Errorf("Value for --force-sleep cannot be less than 3 seconds. This is for your own protection.")
+		return fmt.Errorf("value for --force-sleep cannot be less than 3 seconds. This is for your own protection")
 	}
 	forceSleep := time.Duration(n.Parameters.ForceSleep) * time.Second
 
@@ -46,7 +46,7 @@ func (n *Nuke) Run() error {
 	}
 
 	fmt.Printf("Do you really want to nuke the project with "+
-		"the ID %s and the name '%s'?\n", n.Project.ID(), n.Project.Name)
+		"the ID %s and the name '%s'?\n", n.Project.ID(), n.Project.Name())
 	if n.Parameters.Force {
 		fmt.Printf("Waiting %v before continuing.\n", forceSleep)
 		time.Sleep(forceSleep)
@@ -153,9 +153,9 @@ func (n *Nuke) Scan() error {
 
 	queue := make(Queue, 0)
 
-	region := NewRegion("temp", n.Project.ResourceTypeToServiceType, n.Project.NewSession)
+	project := NewProject(n.Project.ID())
 
-	items := Scan(region, resourceTypes)
+	items := Scan(project, resourceTypes)
 	for item := range items {
 		ffGetter, ok := item.Resource.(resources.FeatureFlagGetter)
 		if ok {

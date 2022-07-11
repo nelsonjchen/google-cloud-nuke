@@ -3,9 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
 	"runtime/debug"
 
+	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/util"
 	"github.com/rebuy-de/aws-nuke/v2/resources"
 	log "github.com/sirupsen/logrus"
@@ -14,12 +14,12 @@ import (
 
 const ScannerParallelQueries = 16
 
-func Scan(region *Region, resourceTypes []string) <-chan *Item {
+func Scan(project *Project, resourceTypes []string) <-chan *Item {
 	s := &scanner{
 		items:     make(chan *Item, 100),
 		semaphore: semaphore.NewWeighted(ScannerParallelQueries),
 	}
-	go s.run(region, resourceTypes)
+	go s.run(project, resourceTypes)
 
 	return s.items
 }
@@ -29,7 +29,7 @@ type scanner struct {
 	semaphore *semaphore.Weighted
 }
 
-func (s *scanner) run(region *Region, resourceTypes []string) {
+func (s *scanner) run(region *Project, resourceTypes []string) {
 	ctx := context.Background()
 
 	for _, resourceType := range resourceTypes {
@@ -43,7 +43,7 @@ func (s *scanner) run(region *Region, resourceTypes []string) {
 	close(s.items)
 }
 
-func (s *scanner) list(region *Region, resourceType string) {
+func (s *scanner) list(region *Project, resourceType string) {
 	defer func() {
 		if r := recover(); r != nil {
 			err := fmt.Errorf("%v\n\n%s", r.(error), string(debug.Stack()))

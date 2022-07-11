@@ -26,7 +26,7 @@ type Item struct {
 	State  ItemState
 	Reason string
 
-	Region *Region
+	Region *Project
 	Type   string
 }
 
