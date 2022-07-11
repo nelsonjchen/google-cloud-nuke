@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
 	"sort"
 	"strings"
 
@@ -40,8 +41,8 @@ func Sorted(m map[string]string) string {
 	return fmt.Sprintf("[%s]", strings.Join(sorted, ", "))
 }
 
-func Log(region *Project, resourceType string, r resources.Resource, c color.Color, msg string) {
-	ColorRegion.Printf("%s", region.Name)
+func Log(project *gcputil.Project, resourceType string, r resources.Resource, c color.Color, msg string) {
+	ColorRegion.Printf("%s", project.Name)
 	fmt.Printf(" - ")
 	ColorResourceType.Print(resourceType)
 	fmt.Printf(" - ")

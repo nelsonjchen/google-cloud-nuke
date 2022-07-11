@@ -2,14 +2,14 @@ package resources
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
+	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 )
 
 type ResourceListers map[string]ResourceLister
 
-type ResourceLister func(s *session.Session) ([]Resource, error)
+type ResourceLister func(s *gcputil.Project) ([]Resource, error)
 
 type Resource interface {
 	Remove() error

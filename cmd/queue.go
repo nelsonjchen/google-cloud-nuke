@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
 
 	"github.com/rebuy-de/aws-nuke/v2/resources"
 )
@@ -26,35 +27,31 @@ type Item struct {
 	State  ItemState
 	Reason string
 
-	Region *Project
-	Type   string
+	Project *gcputil.Project
+	Type    string
 }
 
 func (i *Item) Print() {
 	switch i.State {
 	case ItemStateNew:
-		Log(i.Region, i.Type, i.Resource, ReasonWaitPending, "would remove")
+		Log(i.Project, i.Type, i.Resource, ReasonWaitPending, "would remove")
 	case ItemStatePending:
-		Log(i.Region, i.Type, i.Resource, ReasonWaitPending, "triggered remove")
+		Log(i.Project, i.Type, i.Resource, ReasonWaitPending, "triggered remove")
 	case ItemStateWaiting:
-		Log(i.Region, i.Type, i.Resource, ReasonWaitPending, "waiting")
+		Log(i.Project, i.Type, i.Resource, ReasonWaitPending, "waiting")
 	case ItemStateFailed:
-		Log(i.Region, i.Type, i.Resource, ReasonError, "failed")
+		Log(i.Project, i.Type, i.Resource, ReasonError, "failed")
 	case ItemStateFiltered:
-		Log(i.Region, i.Type, i.Resource, ReasonSkip, i.Reason)
+		Log(i.Project, i.Type, i.Resource, ReasonSkip, i.Reason)
 	case ItemStateFinished:
-		Log(i.Region, i.Type, i.Resource, ReasonSuccess, "removed")
+		Log(i.Project, i.Type, i.Resource, ReasonSuccess, "removed")
 	}
 }
 
 // List gets all resource items of the same resource type like the Item.
 func (i *Item) List() ([]resources.Resource, error) {
 	lister := resources.GetLister(i.Type)
-	sess, err := i.Region.Session(i.Type)
-	if err != nil {
-		return nil, err
-	}
-	return lister(sess)
+	return lister(i.Project)
 }
 
 func (i *Item) GetProperty(key string) (string, error) {

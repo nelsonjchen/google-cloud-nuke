@@ -14,7 +14,7 @@ import (
 
 const ScannerParallelQueries = 16
 
-func Scan(project *Project, resourceTypes []string) <-chan *Item {
+func Scan(project *gcputil.Project, resourceTypes []string) <-chan *Item {
 	s := &scanner{
 		items:     make(chan *Item, 100),
 		semaphore: semaphore.NewWeighted(ScannerParallelQueries),
@@ -29,12 +29,12 @@ type scanner struct {
 	semaphore *semaphore.Weighted
 }
 
-func (s *scanner) run(region *Project, resourceTypes []string) {
+func (s *scanner) run(project *gcputil.Project, resourceTypes []string) {
 	ctx := context.Background()
 
 	for _, resourceType := range resourceTypes {
 		s.semaphore.Acquire(ctx, 1)
-		go s.list(region, resourceType)
+		go s.list(project, resourceType)
 	}
 
 	// Wait for all routines to finish.
@@ -43,7 +43,7 @@ func (s *scanner) run(region *Project, resourceTypes []string) {
 	close(s.items)
 }
 
-func (s *scanner) list(region *Project, resourceType string) {
+func (s *scanner) list(project *gcputil.Project, resourceType string) {
 	defer func() {
 		if r := recover(); r != nil {
 			err := fmt.Errorf("%v\n\n%s", r.(error), string(debug.Stack()))
@@ -54,11 +54,8 @@ func (s *scanner) list(region *Project, resourceType string) {
 	defer s.semaphore.Release(1)
 
 	lister := resources.GetLister(resourceType)
-	var rs []resources.Resource
-	sess, err := region.Session(resourceType)
-	if err == nil {
-		rs, err = lister(sess)
-	}
+	rs, err := lister(project)
+
 	if err != nil {
 		_, ok := err.(gcputil.ErrSkipRequest)
 		if ok {
@@ -79,7 +76,7 @@ func (s *scanner) list(region *Project, resourceType string) {
 
 	for _, r := range rs {
 		s.items <- &Item{
-			Region:   region,
+			Project:  project,
 			Resource: r,
 			State:    ItemStateNew,
 			Type:     resourceType,

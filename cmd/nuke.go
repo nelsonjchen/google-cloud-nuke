@@ -153,9 +153,7 @@ func (n *Nuke) Scan() error {
 
 	queue := make(Queue, 0)
 
-	project := NewProject(n.Project.ID())
-
-	items := Scan(project, resourceTypes)
+	items := Scan(&n.Project, resourceTypes)
 	for item := range items {
 		ffGetter, ok := item.Resource.(resources.FeatureFlagGetter)
 		if ok {
@@ -275,12 +273,12 @@ func (n *Nuke) HandleRemove(item *Item) {
 
 func (n *Nuke) HandleWait(item *Item, cache map[string]map[string][]resources.Resource) {
 	var err error
-	region := item.Region.Name
-	_, ok := cache[region]
+	project := item.Project.Name()
+	_, ok := cache[project]
 	if !ok {
-		cache[region] = map[string][]resources.Resource{}
+		cache[project] = map[string][]resources.Resource{}
 	}
-	left, ok := cache[region][item.Type]
+	left, ok := cache[project][item.Type]
 	if !ok {
 		left, err = item.List()
 		if err != nil {
@@ -288,7 +286,7 @@ func (n *Nuke) HandleWait(item *Item, cache map[string]map[string][]resources.Re
 			item.Reason = err.Error()
 			return
 		}
-		cache[region][item.Type] = left
+		cache[project][item.Type] = left
 	}
 
 	for _, r := range left {
