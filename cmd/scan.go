@@ -3,9 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
 	"runtime/debug"
 
-	"github.com/rebuy-de/aws-nuke/v2/pkg/awsutil"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/util"
 	"github.com/rebuy-de/aws-nuke/v2/resources"
 	log "github.com/sirupsen/logrus"
@@ -60,13 +60,13 @@ func (s *scanner) list(region *Region, resourceType string) {
 		rs, err = lister(sess)
 	}
 	if err != nil {
-		_, ok := err.(awsutil.ErrSkipRequest)
+		_, ok := err.(gcputil.ErrSkipRequest)
 		if ok {
 			log.Debugf("skipping request: %v", err)
 			return
 		}
 
-		_, ok = err.(awsutil.ErrUnknownEndpoint)
+		_, ok = err.(gcputil.ErrUnknownEndpoint)
 		if ok {
 			log.Warnf("skipping request: %v", err)
 			return
