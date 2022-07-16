@@ -19,7 +19,7 @@ var (
 )
 
 var (
-	ColorRegion             = *color.New(color.Bold)
+	ColorProject            = *color.New(color.Bold)
 	ColorResourceType       = *color.New()
 	ColorResourceID         = *color.New(color.Bold)
 	ColorResourceProperties = *color.New(color.Italic)
@@ -42,7 +42,7 @@ func Sorted(m map[string]string) string {
 }
 
 func Log(project *gcputil.Project, resourceType string, r resources.Resource, c color.Color, msg string) {
-	ColorRegion.Printf("%s", project.Name)
+	ColorProject.Printf("%s", project.Name)
 	fmt.Printf(" - ")
 	ColorResourceType.Print(resourceType)
 	fmt.Printf(" - ")

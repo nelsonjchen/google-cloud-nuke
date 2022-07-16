@@ -51,7 +51,7 @@ func (n *Nuke) Run() error {
 		fmt.Printf("Waiting %v before continuing.\n", forceSleep)
 		time.Sleep(forceSleep)
 	} else {
-		fmt.Printf("Do you want to continue? Enter account alias to continue.\n")
+		fmt.Printf("Do you want to continue? Enter project name alias to continue.\n")
 		err = Prompt(n.Project.Name())
 		if err != nil {
 			return err
@@ -73,8 +73,8 @@ func (n *Nuke) Run() error {
 		return nil
 	}
 
-	fmt.Printf("Do you really want to nuke these resources on the account with "+
-		"the ID %s and the alias '%s'?\n", n.Project.ID(), n.Project.Name())
+	fmt.Printf("Do you really want to nuke these resources on the project with "+
+		"the ID %s and the name '%s'?\n", n.Project.ID(), n.Project.Name())
 	if n.Parameters.Force {
 		fmt.Printf("Waiting %v before continuing.\n", forceSleep)
 		time.Sleep(forceSleep)
@@ -135,19 +135,19 @@ func (n *Nuke) Run() error {
 }
 
 func (n *Nuke) Scan() error {
-	accountConfig := n.Config.Projects[n.Project.ID()]
+	projectConfig := n.Config.Projects[n.Project.ID()]
 
 	resourceTypes := ResolveResourceTypes(
 		resources.GetListerNames(),
 		[]types.Collection{
 			n.Parameters.Targets,
 			n.Config.ResourceTypes.Targets,
-			accountConfig.ResourceTypes.Targets,
+			projectConfig.ResourceTypes.Targets,
 		},
 		[]types.Collection{
 			n.Parameters.Excludes,
 			n.Config.ResourceTypes.Excludes,
-			accountConfig.ResourceTypes.Excludes,
+			projectConfig.ResourceTypes.Excludes,
 		},
 	)
 
@@ -195,12 +195,12 @@ func (n *Nuke) Filter(item *Item) error {
 		}
 	}
 
-	accountFilters, err := n.Config.Filters(n.Project.ID())
+	projectFilters, err := n.Config.Filters(n.Project.ID())
 	if err != nil {
 		return err
 	}
 
-	itemFilters, ok := accountFilters[item.Type]
+	itemFilters, ok := projectFilters[item.Type]
 	if !ok {
 		return nil
 	}
