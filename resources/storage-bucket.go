@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	register("storage", ListCSBuckets)
+	register("storage#bucket", ListCSBuckets)
 }
 
 type CSBucket struct {
