@@ -13,17 +13,17 @@ import (
 )
 
 func init() {
-	register("storage#bucket", ListCSBuckets)
+	register("storage#bucket", ListStorageBuckets)
 }
 
-type CSBucket struct {
+type StorageBucket struct {
 	client       *storage.Client
 	name         string
 	creationDate time.Time
 	tags         []*s3.Tag
 }
 
-func ListCSBuckets(s *gcputil.Project) ([]Resource, error) {
+func ListStorageBuckets(s *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 
@@ -42,7 +42,7 @@ func ListCSBuckets(s *gcputil.Project) ([]Resource, error) {
 		if err != nil {
 			return nil, err
 		}
-		resources = append(resources, &CSBucket{
+		resources = append(resources, &StorageBucket{
 			client:       client,
 			name:         bucket.Name,
 			creationDate: bucket.Created,
@@ -52,7 +52,7 @@ func ListCSBuckets(s *gcputil.Project) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *CSBucket) Remove() error {
+func (e *StorageBucket) Remove() error {
 	ctx := context.Background()
 
 	err := e.client.Bucket(e.name).Delete(ctx)
@@ -60,6 +60,6 @@ func (e *CSBucket) Remove() error {
 	return err
 }
 
-func (e *CSBucket) String() string {
+func (e *StorageBucket) String() string {
 	return fmt.Sprintf("gcs://%s", e.name)
 }
