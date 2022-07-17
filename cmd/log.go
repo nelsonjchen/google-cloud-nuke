@@ -42,7 +42,7 @@ func Sorted(m map[string]string) string {
 }
 
 func Log(project *gcputil.Project, resourceType string, r resources.Resource, c color.Color, msg string) {
-	ColorProject.Printf("%s", project.Name)
+	ColorProject.Printf("%s", project.Name())
 	fmt.Printf(" - ")
 	ColorResourceType.Print(resourceType)
 	fmt.Printf(" - ")
