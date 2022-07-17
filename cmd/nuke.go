@@ -33,8 +33,8 @@ func NewNuke(params NukeParameters, project gcputil.Project) *Nuke {
 func (n *Nuke) Run() error {
 	var err error
 
-	if n.Parameters.ForceSleep < 3 {
-		return fmt.Errorf("value for --force-sleep cannot be less than 3 seconds. This is for your own protection")
+	if n.Parameters.ForceSleep < 3 && n.Parameters.NoDryRun {
+		return fmt.Errorf("value for --force-sleep cannot be less than 3 seconds if no-dry-run is set. This is for your own protection")
 	}
 	forceSleep := time.Duration(n.Parameters.ForceSleep) * time.Second
 
