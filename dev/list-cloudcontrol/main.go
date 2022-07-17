@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/fatih/color"
-	"github.com/rebuy-de/aws-nuke/v2/resources"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/resources"
 	"github.com/rebuy-de/rebuy-go-sdk/v3/pkg/cmdutil"
 	"github.com/sirupsen/logrus"
 )

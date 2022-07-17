@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/rebuy-de/aws-nuke/v2/cmd"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/cmd"
 )
 
 func main() {

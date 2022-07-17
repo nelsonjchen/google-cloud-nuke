@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"time"
 
-	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
-	"github.com/rebuy-de/aws-nuke/v2/resources"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/config"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/resources"
 	"github.com/sirupsen/logrus"
 )
 

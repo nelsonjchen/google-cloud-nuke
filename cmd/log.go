@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"sort"
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/rebuy-de/aws-nuke/v2/resources"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/resources"
 )
 
 var (

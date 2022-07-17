@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 
-	"github.com/rebuy-de/aws-nuke/v2/resources"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/resources"
 )
 
 type ItemState int

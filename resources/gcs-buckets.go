@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"google.golang.org/api/iterator"
 
-	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"time"
 
 	"cloud.google.com/go/storage"

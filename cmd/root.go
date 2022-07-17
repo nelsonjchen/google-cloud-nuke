@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
-	"github.com/rebuy-de/aws-nuke/v2/resources"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/config"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

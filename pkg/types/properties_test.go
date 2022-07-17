@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
 )
 
 func TestPropertiesEquals(t *testing.T) {

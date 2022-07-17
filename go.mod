@@ -1,4 +1,4 @@
-module github.com/rebuy-de/aws-nuke/v2
+module github.com/nelsonjchen/google-cloud-nuke/v1
 
 go 1.18
 

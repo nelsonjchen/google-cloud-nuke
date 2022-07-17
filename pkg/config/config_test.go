@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
 )
 
 func TestConfigBlocklist(t *testing.T) {

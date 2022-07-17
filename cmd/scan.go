@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/rebuy-de/aws-nuke/v2/pkg/gcputil"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/util"
-	"github.com/rebuy-de/aws-nuke/v2/resources"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/util"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/resources"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/semaphore"
 )
