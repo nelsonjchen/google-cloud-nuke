@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"google.golang.org/api/iterator"
 
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
@@ -20,7 +19,7 @@ type StorageBucket struct {
 	client       *storage.Client
 	name         string
 	creationDate time.Time
-	tags         []*s3.Tag
+	labels       map[string]string
 }
 
 func ListStorageBuckets(s *gcputil.Project) ([]Resource, error) {
@@ -46,6 +45,7 @@ func ListStorageBuckets(s *gcputil.Project) ([]Resource, error) {
 			client:       client,
 			name:         bucket.Name,
 			creationDate: bucket.Created,
+			labels:       bucket.Labels,
 		})
 	}
 
