@@ -22,25 +22,18 @@ type StorageBucket struct {
 	labels       map[string]string
 }
 
-func ListStorageBuckets(s *gcputil.Project) ([]Resource, error) {
+func ListStorageBuckets(p *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 
-	bucketIt := client.Buckets(ctx, s.ID())
+	buckets, err := DescribeStorageBuckets(client, p.ID())
 	if err != nil {
 		return nil, err
 	}
 
 	resources := make([]Resource, 0)
 
-	for {
-		bucket, err := bucketIt.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
+	for _, bucket := range buckets {
 		resources = append(resources, &StorageBucket{
 			client:       client,
 			name:         bucket.Name,
@@ -50,6 +43,25 @@ func ListStorageBuckets(s *gcputil.Project) ([]Resource, error) {
 	}
 
 	return resources, nil
+}
+
+func DescribeStorageBuckets(s *storage.Client, id string) ([]*storage.BucketAttrs, error) {
+	ctx := context.Background()
+	bucketIt := s.Buckets(ctx, id)
+	buckets := make([]*storage.BucketAttrs, 0)
+
+	for {
+		bucket, err := bucketIt.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		buckets = append(buckets, bucket)
+	}
+
+	return buckets, nil
 }
 
 func (e *StorageBucket) Remove() error {

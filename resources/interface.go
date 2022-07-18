@@ -9,7 +9,7 @@ import (
 
 type ResourceListers map[string]ResourceLister
 
-type ResourceLister func(s *gcputil.Project) ([]Resource, error)
+type ResourceLister func(p *gcputil.Project) ([]Resource, error)
 
 type Resource interface {
 	Remove() error
