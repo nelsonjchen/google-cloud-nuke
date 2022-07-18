@@ -67,9 +67,34 @@ func DescribeStorageBuckets(s *storage.Client, p *gcputil.Project) ([]*storage.B
 func (e *StorageBucket) Remove() error {
 	ctx := context.Background()
 
-	err := e.client.Bucket(e.name).Delete(ctx)
+	err := e.RemoveAllObjects()
+	if err != nil {
+		return err
+	}
+
+	err = e.client.Bucket(e.name).Delete(ctx)
 
 	return err
+}
+
+func (e *StorageBucket) RemoveAllObjects() error {
+	ctx := context.Background()
+	bucket := e.client.Bucket(e.name)
+	its := bucket.Objects(ctx, nil)
+	for {
+		objects, err := its.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		err = bucket.Object(objects.Name).Delete(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (e *StorageBucket) Properties() types.Properties {
