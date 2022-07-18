@@ -26,7 +26,7 @@ func ListStorageBuckets(p *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 
-	buckets, err := DescribeStorageBuckets(client, p.ID())
+	buckets, err := DescribeStorageBuckets(client, p)
 	if err != nil {
 		return nil, err
 	}
@@ -45,9 +45,9 @@ func ListStorageBuckets(p *gcputil.Project) ([]Resource, error) {
 	return resources, nil
 }
 
-func DescribeStorageBuckets(s *storage.Client, id string) ([]*storage.BucketAttrs, error) {
+func DescribeStorageBuckets(s *storage.Client, p *gcputil.Project) ([]*storage.BucketAttrs, error) {
 	ctx := context.Background()
-	bucketIt := s.Buckets(ctx, id)
+	bucketIt := s.Buckets(ctx, p.ID())
 	buckets := make([]*storage.BucketAttrs, 0)
 
 	for {
