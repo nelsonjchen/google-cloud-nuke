@@ -61,5 +61,5 @@ func (e *StorageBucket) Remove() error {
 }
 
 func (e *StorageBucket) String() string {
-	return fmt.Sprintf("gcs://%s", e.name)
+	return fmt.Sprintf("gs://%s", e.name)
 }
