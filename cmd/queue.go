@@ -34,17 +34,17 @@ type Item struct {
 func (i *Item) Print() {
 	switch i.State {
 	case ItemStateNew:
-		Log(i.Project, i.Type, i.Resource, ReasonWaitPending, "would remove")
+		Log(i.Type, i.Resource, ReasonWaitPending, "would remove")
 	case ItemStatePending:
-		Log(i.Project, i.Type, i.Resource, ReasonWaitPending, "triggered remove")
+		Log(i.Type, i.Resource, ReasonWaitPending, "triggered remove")
 	case ItemStateWaiting:
-		Log(i.Project, i.Type, i.Resource, ReasonWaitPending, "waiting")
+		Log(i.Type, i.Resource, ReasonWaitPending, "waiting")
 	case ItemStateFailed:
-		Log(i.Project, i.Type, i.Resource, ReasonError, "failed")
+		Log(i.Type, i.Resource, ReasonError, "failed")
 	case ItemStateFiltered:
-		Log(i.Project, i.Type, i.Resource, ReasonSkip, i.Reason)
+		Log(i.Type, i.Resource, ReasonSkip, i.Reason)
 	case ItemStateFinished:
-		Log(i.Project, i.Type, i.Resource, ReasonSuccess, "removed")
+		Log(i.Type, i.Resource, ReasonSuccess, "removed")
 	}
 }
 

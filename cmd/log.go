@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"sort"
 	"strings"
 
@@ -11,15 +10,13 @@ import (
 )
 
 var (
-	ReasonSkip            = *color.New(color.FgYellow)
-	ReasonError           = *color.New(color.FgRed)
-	ReasonRemoveTriggered = *color.New(color.FgGreen)
-	ReasonWaitPending     = *color.New(color.FgBlue)
-	ReasonSuccess         = *color.New(color.FgGreen)
+	ReasonSkip        = *color.New(color.FgYellow)
+	ReasonError       = *color.New(color.FgRed)
+	ReasonWaitPending = *color.New(color.FgBlue)
+	ReasonSuccess     = *color.New(color.FgGreen)
 )
 
 var (
-	ColorProject            = *color.New(color.Bold)
 	ColorResourceType       = *color.New()
 	ColorResourceID         = *color.New(color.Bold)
 	ColorResourceProperties = *color.New(color.Italic)
@@ -41,23 +38,21 @@ func Sorted(m map[string]string) string {
 	return fmt.Sprintf("[%s]", strings.Join(sorted, ", "))
 }
 
-func Log(project *gcputil.Project, resourceType string, r resources.Resource, c color.Color, msg string) {
-	ColorProject.Printf("%s", project.Name())
-	fmt.Printf(" - ")
-	ColorResourceType.Print(resourceType)
+func Log(resourceType string, r resources.Resource, c color.Color, msg string) {
+	_, _ = ColorResourceType.Print(resourceType)
 	fmt.Printf(" - ")
 
 	rString, ok := r.(resources.LegacyStringer)
 	if ok {
-		ColorResourceID.Print(rString.String())
+		_, _ = ColorResourceID.Print(rString.String())
 		fmt.Printf(" - ")
 	}
 
 	rProp, ok := r.(resources.ResourcePropertyGetter)
 	if ok {
-		ColorResourceProperties.Print(Sorted(rProp.Properties()))
+		_, _ = ColorResourceProperties.Print(Sorted(rProp.Properties()))
 		fmt.Printf(" - ")
 	}
 
-	c.Printf("%s\n", msg)
+	_, _ = c.Printf("%s\n", msg)
 }
