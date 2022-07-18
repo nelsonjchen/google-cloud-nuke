@@ -67,12 +67,21 @@ func DescribeStorageBuckets(s *storage.Client, p *gcputil.Project) ([]*storage.B
 func (e *StorageBucket) Remove() error {
 	ctx := context.Background()
 
-	err := e.RemoveAllObjects()
+	bucket := e.client.Bucket(e.name)
+
+	_, err := bucket.Update(ctx, storage.BucketAttrsToUpdate{
+		VersioningEnabled: false,
+	})
 	if err != nil {
 		return err
 	}
 
-	err = e.client.Bucket(e.name).Delete(ctx)
+	err = e.RemoveAllObjects()
+	if err != nil {
+		return err
+	}
+
+	err = bucket.Delete(ctx)
 
 	return err
 }
@@ -80,16 +89,17 @@ func (e *StorageBucket) Remove() error {
 func (e *StorageBucket) RemoveAllObjects() error {
 	ctx := context.Background()
 	bucket := e.client.Bucket(e.name)
-	its := bucket.Objects(ctx, nil)
+	its := bucket.Objects(ctx, &storage.Query{Versions: true})
 	for {
-		objects, err := its.Next()
+		object, err := its.Next()
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
 			return err
 		}
-		err = bucket.Object(objects.Name).Delete(ctx)
+		obj := bucket.Object(object.Name).Generation(object.Generation)
+		err = obj.Delete(ctx)
 		if err != nil {
 			return err
 		}
