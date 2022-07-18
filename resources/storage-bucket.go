@@ -26,14 +26,14 @@ func ListStorageBuckets(p *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 
-	buckets, err := DescribeStorageBuckets(client, p)
+	bucketAttrs, err := DescribeStorageBuckets(client, p)
 	if err != nil {
 		return nil, err
 	}
 
 	resources := make([]Resource, 0)
 
-	for _, bucket := range buckets {
+	for _, bucket := range bucketAttrs {
 		resources = append(resources, &StorageBucket{
 			client:       client,
 			name:         bucket.Name,
