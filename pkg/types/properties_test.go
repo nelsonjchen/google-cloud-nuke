@@ -2,9 +2,9 @@ package types_test
 
 import (
 	"fmt"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/util"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
 )
 
@@ -65,7 +65,7 @@ func TestPropertiesEquals(t *testing.T) {
 	}
 }
 
-func TestPropertiesSetTag(t *testing.T) {
+func TestPropertiesSetLabels(t *testing.T) {
 	cases := []struct {
 		name  string
 		key   *string
@@ -74,38 +74,38 @@ func TestPropertiesSetTag(t *testing.T) {
 	}{
 		{
 			name:  "string",
-			key:   aws.String("name"),
-			value: "blubber",
-			want:  `[tag:name: "blubber"]`,
+			key:   util.String("name"),
+			value: util.String("blubber"),
+			want:  `[label:name: "blubber"]`,
 		},
 		{
 			name:  "string_ptr",
-			key:   aws.String("name"),
-			value: aws.String("blubber"),
-			want:  `[tag:name: "blubber"]`,
+			key:   util.String("name"),
+			value: util.String("blubber"),
+			want:  `[label:name: "blubber"]`,
 		},
 		{
 			name:  "int",
-			key:   aws.String("int"),
+			key:   util.String("int"),
 			value: 42,
-			want:  `[tag:int: "42"]`,
+			want:  `[label:int: "42"]`,
 		},
 		{
 			name:  "nil",
-			key:   aws.String("nothing"),
+			key:   util.String("nothing"),
 			value: nil,
 			want:  `[]`,
 		},
 		{
 			name:  "empty_key",
-			key:   aws.String(""),
-			value: "empty",
+			key:   util.String(""),
+			value: util.String("empty"),
 			want:  `[]`,
 		},
 		{
 			name:  "nil_key",
 			key:   nil,
-			value: "empty",
+			value: util.String("empty"),
 			want:  `[]`,
 		},
 	}
@@ -114,7 +114,7 @@ func TestPropertiesSetTag(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			p := types.NewProperties()
 
-			p.SetTag(tc.key, tc.value)
+			p.SetLabel(tc.key, tc.value)
 			have := p.String()
 
 			if tc.want != have {
@@ -124,7 +124,8 @@ func TestPropertiesSetTag(t *testing.T) {
 	}
 }
 
-func TestPropertiesSetTagWithPrefix(t *testing.T) {
+func TestPropertiesSetLabelWithPrefix(t *testing.T) {
+
 	cases := []struct {
 		name   string
 		prefix string
@@ -135,16 +136,16 @@ func TestPropertiesSetTagWithPrefix(t *testing.T) {
 		{
 			name:   "empty",
 			prefix: "",
-			key:    aws.String("name"),
+			key:    util.String("name"),
 			value:  "blubber",
-			want:   `[tag:name: "blubber"]`,
+			want:   `[label:name: "blubber"]`,
 		},
 		{
 			name:   "nonempty",
 			prefix: "bish",
-			key:    aws.String("bash"),
+			key:    util.String("bash"),
 			value:  "bosh",
-			want:   `[tag:bish:bash: "bosh"]`,
+			want:   `[label:bish:bash: "bosh"]`,
 		},
 	}
 
@@ -152,7 +153,7 @@ func TestPropertiesSetTagWithPrefix(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			p := types.NewProperties()
 
-			p.SetTagWithPrefix(tc.prefix, tc.key, tc.value)
+			p.SetLabelWithPrefix(tc.prefix, tc.key, tc.value)
 			have := p.String()
 
 			if tc.want != have {

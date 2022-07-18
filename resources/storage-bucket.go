@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
 	"google.golang.org/api/iterator"
 
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
@@ -58,6 +59,18 @@ func (e *StorageBucket) Remove() error {
 	err := e.client.Bucket(e.name).Delete(ctx)
 
 	return err
+}
+
+func (e *StorageBucket) Properties() types.Properties {
+	properties := types.NewProperties().
+		Set("Name", e.name).
+		Set("CreationDate", e.creationDate)
+
+	for key, label := range e.labels {
+		properties.SetLabel(&key, &label)
+	}
+
+	return properties
 }
 
 func (e *StorageBucket) String() string {

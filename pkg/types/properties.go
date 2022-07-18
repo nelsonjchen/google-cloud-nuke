@@ -60,16 +60,16 @@ func (p Properties) Set(key string, value interface{}) Properties {
 	return p
 }
 
-func (p Properties) SetTag(tagKey *string, tagValue interface{}) Properties {
-	return p.SetTagWithPrefix("", tagKey, tagValue)
+func (p Properties) SetLabel(labelKey *string, labelValue interface{}) Properties {
+	return p.SetLabelWithPrefix("", labelKey, labelValue)
 }
 
-func (p Properties) SetTagWithPrefix(prefix string, tagKey *string, tagValue interface{}) Properties {
-	if tagKey == nil {
+func (p Properties) SetLabelWithPrefix(prefix string, labelKey *string, labelValue interface{}) Properties {
+	if labelKey == nil {
 		return p
 	}
 
-	keyStr := strings.TrimSpace(*tagKey)
+	keyStr := strings.TrimSpace(*labelKey)
 	prefix = strings.TrimSpace(prefix)
 
 	if keyStr == "" {
@@ -80,9 +80,9 @@ func (p Properties) SetTagWithPrefix(prefix string, tagKey *string, tagValue int
 		keyStr = fmt.Sprintf("%s:%s", prefix, keyStr)
 	}
 
-	keyStr = fmt.Sprintf("tag:%s", keyStr)
+	keyStr = fmt.Sprintf("label:%s", keyStr)
 
-	return p.Set(keyStr, tagValue)
+	return p.Set(keyStr, labelValue)
 }
 
 func (p Properties) Get(key string) string {
