@@ -26,7 +26,7 @@ var (
 )
 
 // Format the resource properties in sorted order ready for printing.
-// This ensures that multiple runs of aws-nuke produce stable output so
+// This ensures that multiple runs of google-cloud-nuke produce stable output so
 // that they can be compared with each other.
 func Sorted(m map[string]string) string {
 	keys := make([]string, 0, len(m))

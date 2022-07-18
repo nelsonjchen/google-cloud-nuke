@@ -1,6 +1,6 @@
 /vendor
-/aws-nuke
-/aws-nuke-*
+/google-cloud-nuke
+/google-cloud-nuke-*
 /dist
 /releases
 /mocks
