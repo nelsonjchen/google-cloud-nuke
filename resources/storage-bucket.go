@@ -3,13 +3,12 @@ package resources
 import (
 	"context"
 	"fmt"
-	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
-	"google.golang.org/api/iterator"
-
-	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
+	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
+	"google.golang.org/api/iterator"
 )
 
 func init() {
