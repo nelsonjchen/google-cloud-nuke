@@ -69,14 +69,7 @@ func (e *StorageBucket) Remove() error {
 
 	bucket := e.client.Bucket(e.name)
 
-	_, err := bucket.Update(ctx, storage.BucketAttrsToUpdate{
-		VersioningEnabled: false,
-	})
-	if err != nil {
-		return err
-	}
-
-	err = e.RemoveAllObjects()
+	err := e.RemoveAllObjects()
 	if err != nil {
 		return err
 	}
