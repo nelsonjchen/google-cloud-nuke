@@ -51,7 +51,7 @@ func (n *Nuke) Run() error {
 		fmt.Printf("Waiting %v before continuing.\n", forceSleep)
 		time.Sleep(forceSleep)
 	} else {
-		fmt.Printf("Do you want to continue? Enter project name alias to continue.\n")
+		fmt.Printf("Do you want to continue? Enter project name to continue.\n")
 		err = Prompt(n.Project.Name())
 		if err != nil {
 			return err
