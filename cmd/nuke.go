@@ -38,7 +38,7 @@ func (n *Nuke) Run() error {
 	}
 	forceSleep := time.Duration(n.Parameters.ForceSleep) * time.Second
 
-	fmt.Printf("aws-nuke version %s - %s - %s\n\n", BuildVersion, BuildDate, BuildHash)
+	fmt.Printf("google-cloud-nuke version %s - %s - %s\n\n", BuildVersion, BuildDate, BuildHash)
 
 	err = n.Config.ValidateProject(n.Project.ID(), n.Project.Name())
 	if err != nil {
