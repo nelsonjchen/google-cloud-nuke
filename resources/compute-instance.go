@@ -2,13 +2,10 @@ package resources
 
 import (
 	"context"
-	"path"
-
-	"cloud.google.com/go/compute/apiv1"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
-	"google.golang.org/api/iterator"
-	computepb "google.golang.org/genproto/googleapis/cloud/compute/v1"
+	"google.golang.org/api/compute/v1"
+	"path"
 )
 
 func init() {
@@ -16,7 +13,7 @@ func init() {
 }
 
 type ComputeInstance struct {
-	client  *compute.InstancesClient
+	service *compute.InstancesService
 	name    string
 	project string
 	zone    string
@@ -25,35 +22,33 @@ type ComputeInstance struct {
 
 func ListComputeInstances(p *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
-	client, err := compute.NewInstancesRESTClient(ctx)
+	computeService, err := compute.NewService(ctx)
+	if err != nil {
+		return nil, err
+	}
+	instanceService := compute.NewInstancesService(computeService)
+
+	call := instanceService.AggregatedList(p.ID())
+	resp, err := call.Do()
 	if err != nil {
 		return nil, err
 	}
 
-	req := &computepb.AggregatedListInstancesRequest{
-		Project: p.ID(),
-	}
-
 	resources := make([]Resource, 0)
-
-	it := client.AggregatedList(ctx, req)
-	for {
-		resp, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		for _, computeInstance := range resp.Value.Instances {
-			resources = append(resources, &ComputeInstance{
-				client:  client,
-				name:    *computeInstance.Name,
-				zone:    path.Base(*computeInstance.Zone),
+	for zone, items := range resp.Items {
+		for _, item := range items.Instances {
+			instance := &ComputeInstance{
+				service: instanceService,
+				name:    item.Name,
 				project: p.ID(),
-				labels:  computeInstance.Labels,
-			})
+				zone:    path.Base(zone),
+			}
+			// Add labels
+			for key, value := range item.Labels {
+				instance.labels[key] = value
+			}
+
+			resources = append(resources, instance)
 		}
 	}
 
@@ -61,12 +56,10 @@ func ListComputeInstances(p *gcputil.Project) ([]Resource, error) {
 }
 
 func (i *ComputeInstance) Remove() error {
-	ctx := context.Background()
-	_, err := i.client.Delete(ctx, &computepb.DeleteInstanceRequest{
-		Instance: i.name,
-		Project:  i.project,
-		Zone:     i.zone,
-	})
+	_, err := i.service.Delete(i.project, i.zone, i.name).Do()
+	if err != nil {
+		return err
+	}
 
 	return err
 }
