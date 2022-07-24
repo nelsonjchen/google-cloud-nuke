@@ -55,23 +55,27 @@ func ListComputeInstanceTemplates(p *gcputil.Project) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *ComputeInstanceTemplate) Remove() error {
+func (t *ComputeInstanceTemplate) Remove() error {
 	ctx := context.Background()
-	_, err := e.client.Delete(ctx, &computepb.DeleteInstanceTemplateRequest{
-		InstanceTemplate: e.name,
-		Project:          e.project,
+	_, err := t.client.Delete(ctx, &computepb.DeleteInstanceTemplateRequest{
+		InstanceTemplate: t.name,
+		Project:          t.project,
 	})
 
 	return err
 }
 
-func (e *ComputeInstanceTemplate) Properties() types.Properties {
+func (t *ComputeInstanceTemplate) Properties() types.Properties {
 	properties := types.NewProperties().
-		Set("Name", e.name)
+		Set("Name", t.name)
 
-	for key, label := range e.labels {
+	for key, label := range t.labels {
 		properties.SetLabel(&key, &label)
 	}
 
 	return properties
+}
+
+func (t *ComputeInstanceTemplate) String() string {
+	return t.name
 }

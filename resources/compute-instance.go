@@ -60,25 +60,29 @@ func ListComputeInstances(p *gcputil.Project) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *ComputeInstance) Remove() error {
+func (i *ComputeInstance) Remove() error {
 	ctx := context.Background()
-	_, err := e.client.Delete(ctx, &computepb.DeleteInstanceRequest{
-		Instance: e.name,
-		Project:  e.project,
-		Zone:     e.zone,
+	_, err := i.client.Delete(ctx, &computepb.DeleteInstanceRequest{
+		Instance: i.name,
+		Project:  i.project,
+		Zone:     i.zone,
 	})
 
 	return err
 }
 
-func (e *ComputeInstance) Properties() types.Properties {
+func (i *ComputeInstance) Properties() types.Properties {
 	properties := types.NewProperties().
-		Set("Name", e.name).
-		Set("Zone", e.zone)
+		Set("Name", i.name).
+		Set("Zone", i.zone)
 
-	for key, label := range e.labels {
+	for key, label := range i.labels {
 		properties.SetLabel(&key, &label)
 	}
 
 	return properties
+}
+
+func (i *ComputeInstance) String() string {
+	return i.name
 }
