@@ -25,13 +25,13 @@ func ListComputeNodeGroups(p *gcputil.Project) ([]Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	instanceService := compute.NewNodeGroupsService(computeService)
+	service := compute.NewNodeGroupsService(computeService)
 
 	resources := make([]Resource, 0)
 
 	var pageToken string
 	for {
-		call := instanceService.AggregatedList(p.ID()).PageToken(pageToken)
+		call := service.AggregatedList(p.ID()).PageToken(pageToken)
 
 		resp, err := call.Do()
 		if err != nil {
@@ -40,14 +40,12 @@ func ListComputeNodeGroups(p *gcputil.Project) ([]Resource, error) {
 
 		for zone, items := range resp.Items {
 			for _, item := range items.NodeGroups {
-				instance := &ComputeNodeGroups{
-					service: instanceService,
+				resources = append(resources, &ComputeNodeGroups{
+					service: service,
 					name:    item.Name,
 					project: p.ID(),
 					zone:    path.Base(zone),
-				}
-
-				resources = append(resources, instance)
+				})
 			}
 		}
 
@@ -59,8 +57,8 @@ func ListComputeNodeGroups(p *gcputil.Project) ([]Resource, error) {
 	return resources, nil
 }
 
-func (n *ComputeNodeGroups) Remove() error {
-	_, err := n.service.Delete(n.project, n.zone, n.name).Do()
+func (r *ComputeNodeGroups) Remove() error {
+	_, err := r.service.Delete(r.project, r.zone, r.name).Do()
 	if err != nil {
 		return err
 	}
@@ -68,13 +66,13 @@ func (n *ComputeNodeGroups) Remove() error {
 	return err
 }
 
-func (n *ComputeNodeGroups) Properties() types.Properties {
+func (r *ComputeNodeGroups) Properties() types.Properties {
 	properties := types.NewProperties().
-		Set("Name", n.name)
+		Set("Name", r.name)
 
 	return properties
 }
 
-func (n *ComputeNodeGroups) String() string {
-	return n.name
+func (r *ComputeNodeGroups) String() string {
+	return r.name
 }

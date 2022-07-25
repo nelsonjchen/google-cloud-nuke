@@ -64,12 +64,12 @@ func DescribeStorageBuckets(s *storage.Client, p *gcputil.Project) ([]*storage.B
 	return buckets, nil
 }
 
-func (b *StorageBucket) Remove() error {
+func (r *StorageBucket) Remove() error {
 	ctx := context.Background()
 
-	bucket := b.client.Bucket(b.name)
+	bucket := r.client.Bucket(r.name)
 
-	err := b.RemoveAllObjects()
+	err := r.RemoveAllObjects()
 	if err != nil {
 		return err
 	}
@@ -79,9 +79,9 @@ func (b *StorageBucket) Remove() error {
 	return err
 }
 
-func (b *StorageBucket) RemoveAllObjects() error {
+func (r *StorageBucket) RemoveAllObjects() error {
 	ctx := context.Background()
-	bucket := b.client.Bucket(b.name)
+	bucket := r.client.Bucket(r.name)
 	its := bucket.Objects(ctx, &storage.Query{Versions: true})
 	for {
 		object, err := its.Next()
@@ -100,18 +100,18 @@ func (b *StorageBucket) RemoveAllObjects() error {
 	return nil
 }
 
-func (b *StorageBucket) Properties() types.Properties {
+func (r *StorageBucket) Properties() types.Properties {
 	properties := types.NewProperties().
-		Set("Name", b.name).
-		Set("CreationDate", b.creationDate)
+		Set("Name", r.name).
+		Set("CreationDate", r.creationDate)
 
-	for key, label := range b.labels {
+	for key, label := range r.labels {
 		properties.SetLabel(&key, &label)
 	}
 
 	return properties
 }
 
-func (b *StorageBucket) String() string {
-	return fmt.Sprintf("gs://%s", b.name)
+func (r *StorageBucket) String() string {
+	return fmt.Sprintf("gs://%s", r.name)
 }

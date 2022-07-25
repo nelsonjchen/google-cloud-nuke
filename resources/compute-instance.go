@@ -26,13 +26,13 @@ func ListComputeInstances(p *gcputil.Project) ([]Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	instanceService := compute.NewInstancesService(computeService)
+	service := compute.NewInstancesService(computeService)
 
 	resources := make([]Resource, 0)
 
 	var pageToken string
 	for {
-		call := instanceService.AggregatedList(p.ID()).PageToken(pageToken)
+		call := service.AggregatedList(p.ID()).PageToken(pageToken)
 
 		resp, err := call.Do()
 		if err != nil {
@@ -42,12 +42,12 @@ func ListComputeInstances(p *gcputil.Project) ([]Resource, error) {
 		for zone, items := range resp.Items {
 			for _, item := range items.Instances {
 				instance := &ComputeInstance{
-					service: instanceService,
+					service: service,
 					name:    item.Name,
 					project: p.ID(),
 					zone:    path.Base(zone),
 				}
-				// Add labels
+
 				for key, value := range item.Labels {
 					instance.labels[key] = value
 				}
@@ -64,8 +64,8 @@ func ListComputeInstances(p *gcputil.Project) ([]Resource, error) {
 	return resources, nil
 }
 
-func (i *ComputeInstance) Remove() error {
-	_, err := i.service.Delete(i.project, i.zone, i.name).Do()
+func (r *ComputeInstance) Remove() error {
+	_, err := r.service.Delete(r.project, r.zone, r.name).Do()
 	if err != nil {
 		return err
 	}
@@ -73,18 +73,18 @@ func (i *ComputeInstance) Remove() error {
 	return err
 }
 
-func (i *ComputeInstance) Properties() types.Properties {
+func (r *ComputeInstance) Properties() types.Properties {
 	properties := types.NewProperties().
-		Set("Name", i.name).
-		Set("Zone", i.zone)
+		Set("Name", r.name).
+		Set("Zone", r.zone)
 
-	for key, label := range i.labels {
+	for key, label := range r.labels {
 		properties.SetLabel(&key, &label)
 	}
 
 	return properties
 }
 
-func (i *ComputeInstance) String() string {
-	return i.name
+func (r *ComputeInstance) String() string {
+	return r.name
 }

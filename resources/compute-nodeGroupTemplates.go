@@ -25,13 +25,13 @@ func ListComputeNodeTemplates(p *gcputil.Project) ([]Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	instanceService := compute.NewNodeTemplatesService(computeService)
+	service := compute.NewNodeTemplatesService(computeService)
 
 	resources := make([]Resource, 0)
 
 	var pageToken string
 	for {
-		call := instanceService.AggregatedList(p.ID()).PageToken(pageToken)
+		call := service.AggregatedList(p.ID()).PageToken(pageToken)
 
 		resp, err := call.Do()
 		if err != nil {
@@ -40,14 +40,12 @@ func ListComputeNodeTemplates(p *gcputil.Project) ([]Resource, error) {
 
 		for region, items := range resp.Items {
 			for _, item := range items.NodeTemplates {
-				resource := &ComputeNodeTemplate{
-					service: instanceService,
+				resources = append(resources, &ComputeNodeTemplate{
+					service: service,
 					name:    item.Name,
 					project: p.ID(),
 					region:  path.Base(region),
-				}
-
-				resources = append(resources, resource)
+				})
 			}
 		}
 
@@ -59,8 +57,8 @@ func ListComputeNodeTemplates(p *gcputil.Project) ([]Resource, error) {
 	return resources, nil
 }
 
-func (n *ComputeNodeTemplate) Remove() error {
-	_, err := n.service.Delete(n.project, n.region, n.name).Do()
+func (r *ComputeNodeTemplate) Remove() error {
+	_, err := r.service.Delete(r.project, r.region, r.name).Do()
 	if err != nil {
 		return err
 	}
@@ -68,13 +66,13 @@ func (n *ComputeNodeTemplate) Remove() error {
 	return err
 }
 
-func (n *ComputeNodeTemplate) Properties() types.Properties {
+func (r *ComputeNodeTemplate) Properties() types.Properties {
 	properties := types.NewProperties().
-		Set("Name", n.name)
+		Set("Name", r.name)
 
 	return properties
 }
 
-func (n *ComputeNodeTemplate) String() string {
-	return n.name
+func (r *ComputeNodeTemplate) String() string {
+	return r.name
 }

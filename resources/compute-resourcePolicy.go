@@ -10,7 +10,7 @@ import (
 
 func init() {
 	// AKA Instance Schedules
-	register("compute#resourcePolicy", ListResourcePolicy)
+	register("compute#resourcePolicy", ListComputeResourcePolicies)
 }
 
 type ComputeResourcePolicy struct {
@@ -20,19 +20,19 @@ type ComputeResourcePolicy struct {
 	region  string
 }
 
-func ListResourcePolicy(p *gcputil.Project) ([]Resource, error) {
+func ListComputeResourcePolicies(p *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
 	computeService, err := compute.NewService(ctx)
 	if err != nil {
 		return nil, err
 	}
-	instanceService := compute.NewResourcePoliciesService(computeService)
+	service := compute.NewResourcePoliciesService(computeService)
 
 	resources := make([]Resource, 0)
 
 	var pageToken string
 	for {
-		call := instanceService.AggregatedList(p.ID()).PageToken(pageToken)
+		call := service.AggregatedList(p.ID()).PageToken(pageToken)
 
 		resp, err := call.Do()
 		if err != nil {
@@ -41,14 +41,12 @@ func ListResourcePolicy(p *gcputil.Project) ([]Resource, error) {
 
 		for region, items := range resp.Items {
 			for _, item := range items.ResourcePolicies {
-				instance := &ComputeResourcePolicy{
-					service: instanceService,
+				resources = append(resources, &ComputeResourcePolicy{
+					service: service,
 					name:    item.Name,
 					project: p.ID(),
 					region:  path.Base(region),
-				}
-
-				resources = append(resources, instance)
+				})
 			}
 		}
 

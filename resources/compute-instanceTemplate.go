@@ -23,13 +23,13 @@ func ListComputeInstanceTemplates(p *gcputil.Project) ([]Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	instanceService := compute.NewInstanceTemplatesService(computeService)
+	service := compute.NewInstanceTemplatesService(computeService)
 
 	resources := make([]Resource, 0)
 
 	var pageToken string
 	for {
-		call := instanceService.List(p.ID()).PageToken(pageToken)
+		call := service.List(p.ID()).PageToken(pageToken)
 
 		resp, err := call.Do()
 		if err != nil {
@@ -38,13 +38,11 @@ func ListComputeInstanceTemplates(p *gcputil.Project) ([]Resource, error) {
 
 		for _, item := range resp.Items {
 
-			instance := &ComputeInstanceTemplates{
-				service: instanceService,
+			resources = append(resources, &ComputeInstanceTemplates{
+				service: service,
 				name:    item.Name,
 				project: p.ID(),
-			}
-
-			resources = append(resources, instance)
+			})
 
 		}
 
@@ -56,8 +54,8 @@ func ListComputeInstanceTemplates(p *gcputil.Project) ([]Resource, error) {
 	return resources, nil
 }
 
-func (t *ComputeInstanceTemplates) Remove() error {
-	_, err := t.service.Delete(t.project, t.name).Do()
+func (r *ComputeInstanceTemplates) Remove() error {
+	_, err := r.service.Delete(r.project, r.name).Do()
 	if err != nil {
 		return err
 	}
@@ -65,13 +63,13 @@ func (t *ComputeInstanceTemplates) Remove() error {
 	return err
 }
 
-func (t *ComputeInstanceTemplates) Properties() types.Properties {
+func (r *ComputeInstanceTemplates) Properties() types.Properties {
 	properties := types.NewProperties().
-		Set("Name", t.name)
+		Set("Name", r.name)
 
 	return properties
 }
 
-func (t *ComputeInstanceTemplates) String() string {
-	return t.name
+func (r *ComputeInstanceTemplates) String() string {
+	return r.name
 }
