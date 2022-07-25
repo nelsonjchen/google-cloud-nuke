@@ -56,6 +56,7 @@ func ListComputeInstanceTemplates(p *gcputil.Project) ([]Resource, error) {
 
 func (r *ComputeInstanceTemplates) Remove() error {
 	_, err := r.service.Delete(r.project, r.name).Do()
+
 	if err != nil {
 		return err
 	}
