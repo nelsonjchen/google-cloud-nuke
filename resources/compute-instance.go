@@ -29,13 +29,10 @@ func ListComputeInstances(p *gcputil.Project) ([]Resource, error) {
 	instanceService := compute.NewInstancesService(computeService)
 
 	resources := make([]Resource, 0)
-	pageToken := ""
 
+	var pageToken string
 	for {
-		call := instanceService.AggregatedList(p.ID())
-		if pageToken != "" {
-			call = call.PageToken(pageToken)
-		}
+		call := instanceService.AggregatedList(p.ID()).PageToken(pageToken)
 
 		resp, err := call.Do()
 		if err != nil {
