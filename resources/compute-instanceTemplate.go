@@ -1,81 +1,77 @@
 package resources
 
 import (
-	"cloud.google.com/go/compute/apiv1"
 	"context"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
-	"google.golang.org/api/iterator"
-	computepb "google.golang.org/genproto/googleapis/cloud/compute/v1"
+	"google.golang.org/api/compute/v1"
 )
 
 func init() {
 	register("compute#instanceTemplate", ListComputeInstanceTemplates)
 }
 
-type ComputeInstanceTemplate struct {
-	client  *compute.InstanceTemplatesClient
+type ComputeInstanceTemplates struct {
+	service *compute.InstanceTemplatesService
 	name    string
 	project string
-	labels  map[string]string
 }
 
 func ListComputeInstanceTemplates(p *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
-	client, err := compute.NewInstanceTemplatesRESTClient(ctx)
-
+	computeService, err := compute.NewService(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	req := &computepb.ListInstanceTemplatesRequest{
-		Project: p.ID(),
-	}
+	instanceService := compute.NewInstanceTemplatesService(computeService)
 
 	resources := make([]Resource, 0)
 
-	it := client.List(ctx, req)
+	var pageToken string
 	for {
-		resp, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
+		call := instanceService.List(p.ID()).PageToken(pageToken)
+
+		resp, err := call.Do()
 		if err != nil {
 			return nil, err
 		}
 
-		resources = append(resources, &ComputeInstanceTemplate{
-			client:  client,
-			name:    *resp.Name,
-			project: p.ID(),
-		})
+		for _, item := range resp.Items {
 
+			instance := &ComputeInstanceTemplates{
+				service: instanceService,
+				name:    item.Name,
+				project: p.ID(),
+			}
+
+			resources = append(resources, instance)
+
+		}
+
+		if pageToken = resp.NextPageToken; pageToken == "" {
+			break
+		}
 	}
 
 	return resources, nil
 }
 
-func (t *ComputeInstanceTemplate) Remove() error {
-	ctx := context.Background()
-	_, err := t.client.Delete(ctx, &computepb.DeleteInstanceTemplateRequest{
-		InstanceTemplate: t.name,
-		Project:          t.project,
-	})
+func (i *ComputeInstanceTemplates) Remove() error {
+	_, err := i.service.Delete(i.project, i.name).Do()
+	if err != nil {
+		return err
+	}
 
 	return err
 }
 
-func (t *ComputeInstanceTemplate) Properties() types.Properties {
+func (i *ComputeInstanceTemplates) Properties() types.Properties {
 	properties := types.NewProperties().
-		Set("Name", t.name)
-
-	for key, label := range t.labels {
-		properties.SetLabel(&key, &label)
-	}
+		Set("Name", i.name)
 
 	return properties
 }
 
-func (t *ComputeInstanceTemplate) String() string {
-	return t.name
+func (i *ComputeInstanceTemplates) String() string {
+	return i.name
 }
