@@ -41,7 +41,7 @@ func ListComputeInstances(p *gcputil.Project) ([]Resource, error) {
 
 		for zone, items := range resp.Items {
 			for _, item := range items.Instances {
-				instance := &ComputeInstance{
+				resource := &ComputeInstance{
 					service: service,
 					name:    item.Name,
 					project: p.ID(),
@@ -49,10 +49,10 @@ func ListComputeInstances(p *gcputil.Project) ([]Resource, error) {
 				}
 
 				for key, value := range item.Labels {
-					instance.labels[key] = value
+					resource.labels[key] = value
 				}
 
-				resources = append(resources, instance)
+				resources = append(resources, resource)
 			}
 		}
 
