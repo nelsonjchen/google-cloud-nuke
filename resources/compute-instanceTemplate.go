@@ -56,8 +56,8 @@ func ListComputeInstanceTemplates(p *gcputil.Project) ([]Resource, error) {
 	return resources, nil
 }
 
-func (i *ComputeInstanceTemplates) Remove() error {
-	_, err := i.service.Delete(i.project, i.name).Do()
+func (t *ComputeInstanceTemplates) Remove() error {
+	_, err := t.service.Delete(t.project, t.name).Do()
 	if err != nil {
 		return err
 	}
@@ -65,13 +65,13 @@ func (i *ComputeInstanceTemplates) Remove() error {
 	return err
 }
 
-func (i *ComputeInstanceTemplates) Properties() types.Properties {
+func (t *ComputeInstanceTemplates) Properties() types.Properties {
 	properties := types.NewProperties().
-		Set("Name", i.name)
+		Set("Name", t.name)
 
 	return properties
 }
 
-func (i *ComputeInstanceTemplates) String() string {
-	return i.name
+func (t *ComputeInstanceTemplates) String() string {
+	return t.name
 }
