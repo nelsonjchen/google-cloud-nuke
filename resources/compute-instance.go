@@ -28,27 +28,39 @@ func ListComputeInstances(p *gcputil.Project) ([]Resource, error) {
 	}
 	instanceService := compute.NewInstancesService(computeService)
 
-	call := instanceService.AggregatedList(p.ID())
-	resp, err := call.Do()
-	if err != nil {
-		return nil, err
-	}
-
 	resources := make([]Resource, 0)
-	for zone, items := range resp.Items {
-		for _, item := range items.Instances {
-			instance := &ComputeInstance{
-				service: instanceService,
-				name:    item.Name,
-				project: p.ID(),
-				zone:    path.Base(zone),
-			}
-			// Add labels
-			for key, value := range item.Labels {
-				instance.labels[key] = value
-			}
+	pageToken := ""
 
-			resources = append(resources, instance)
+	for {
+		call := instanceService.AggregatedList(p.ID())
+		if pageToken != "" {
+			call = call.PageToken(pageToken)
+		}
+
+		resp, err := call.Do()
+		if err != nil {
+			return nil, err
+		}
+
+		for zone, items := range resp.Items {
+			for _, item := range items.Instances {
+				instance := &ComputeInstance{
+					service: instanceService,
+					name:    item.Name,
+					project: p.ID(),
+					zone:    path.Base(zone),
+				}
+				// Add labels
+				for key, value := range item.Labels {
+					instance.labels[key] = value
+				}
+
+				resources = append(resources, instance)
+			}
+		}
+
+		if pageToken = resp.NextPageToken; pageToken == "" {
+			break
 		}
 	}
 
