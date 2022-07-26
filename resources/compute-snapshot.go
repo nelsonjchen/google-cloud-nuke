@@ -15,7 +15,6 @@ type ComputeSnapshot struct {
 	service *compute.SnapshotsService
 	name    string
 	project string
-	zone    string
 }
 
 func ListComputeSnapshots(p *gcputil.Project) ([]Resource, error) {
