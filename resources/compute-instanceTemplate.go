@@ -6,6 +6,7 @@ import (
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
 	"google.golang.org/api/compute/v1"
+	"google.golang.org/api/googleapi"
 	"time"
 )
 
@@ -61,6 +62,10 @@ func ListComputeInstanceTemplates(p *gcputil.Project) ([]Resource, error) {
 func (r *ComputeInstanceTemplates) Remove() error {
 	var op *compute.Operation
 	op, err := r.service.Delete(r.project, r.name).Do()
+	if e, ok := err.(*googleapi.Error); ok && e.Code == 404 {
+		// It was already gone, so we're good.
+		return nil
+	}
 	if err != nil {
 		return err
 	}
@@ -78,7 +83,7 @@ func (r *ComputeInstanceTemplates) Remove() error {
 		}
 		if runningCount > 4 {
 			// If it is running this long, it's probably fine.
-			break
+			return fmt.Errorf("operation %s is still running. will try operation again", op.Name)
 		}
 		if err != nil {
 			return err
