@@ -2,9 +2,11 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
 	"google.golang.org/api/compute/v1"
+	"time"
 )
 
 func init() {
@@ -12,9 +14,10 @@ func init() {
 }
 
 type ComputeInstanceTemplates struct {
-	service *compute.InstanceTemplatesService
-	name    string
-	project string
+	service        *compute.InstanceTemplatesService
+	computeService *compute.Service
+	name           string
+	project        string
 }
 
 func ListComputeInstanceTemplates(p *gcputil.Project) ([]Resource, error) {
@@ -39,9 +42,10 @@ func ListComputeInstanceTemplates(p *gcputil.Project) ([]Resource, error) {
 		for _, item := range resp.Items {
 
 			resources = append(resources, &ComputeInstanceTemplates{
-				service: service,
-				name:    item.Name,
-				project: p.ID(),
+				service:        service,
+				computeService: computeService,
+				name:           item.Name,
+				project:        p.ID(),
 			})
 
 		}
@@ -55,10 +59,35 @@ func ListComputeInstanceTemplates(p *gcputil.Project) ([]Resource, error) {
 }
 
 func (r *ComputeInstanceTemplates) Remove() error {
-	_, err := r.service.Delete(r.project, r.name).Do()
-
+	var op *compute.Operation
+	op, err := r.service.Delete(r.project, r.name).Do()
 	if err != nil {
 		return err
+	}
+
+	service := compute.NewGlobalOperationsService(r.computeService)
+
+	runningCount := 0
+	for {
+		op, err = service.Get(r.project, op.Name).Do()
+		if op.Status == "DONE" {
+			break
+		}
+		if op.Status == "RUNNING" {
+			runningCount++
+		}
+		if runningCount > 4 {
+			// If it is running this long, it's probably fine.
+			break
+		}
+		if err != nil {
+			return err
+		}
+		time.Sleep(1 * time.Second)
+	}
+
+	if op.Error != nil {
+		return fmt.Errorf("error removing instance template %s: %s", r.name, op.Error.Errors[0].Message)
 	}
 
 	return err
