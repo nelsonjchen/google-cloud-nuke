@@ -1,13 +1,10 @@
 package gcputil
 
 import (
-	"bytes"
-	"net/http"
-	"net/http/httputil"
+	"fmt"
+	"google.golang.org/api/compute/v1"
 	"regexp"
-
-	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/util"
-	log "github.com/sirupsen/logrus"
+	"time"
 )
 
 var (
@@ -18,29 +15,53 @@ func HideSecureHeaders(dump []byte) []byte {
 	return RESecretHeader.ReplaceAll(dump, []byte("$1: <hidden>"))
 }
 
-func DumpRequest(r *http.Request) string {
-	dump, err := httputil.DumpRequest(r, true)
-	if err != nil {
-		log.WithField("Error", err).
-			Warnf("failed to dump HTTP request")
-		return ""
+// ComputeRemoveWaiter is a waiter for compute resources
+// It is used to wait for compute resource operation to be removed and will return an updated operation
+func ComputeRemoveWaiter(op *compute.Operation, service *compute.Service, project string) (*compute.Operation, error) {
+	runningCount := 0
+	runningCountLimit := 4
+	for {
+		if op.Status == "DONE" {
+			break
+		}
+
+		if op.Status == "RUNNING" {
+			runningCount++
+		}
+
+		if runningCount > runningCountLimit {
+			return nil, fmt.Errorf("operation %s is still running. will try operation again", op.Name)
+		}
+
+		time.Sleep(1 * time.Second)
+
+		// Refresh the operation
+		if op.Zone != "" {
+			call := service.ZoneOperations.Get(project, op.Zone, op.Name)
+			resp, err := call.Do()
+			if err != nil {
+				return nil, err
+			}
+			op = resp
+		} else if op.Region != "" {
+			call := service.RegionOperations.Get(project, op.Region, op.Name)
+			resp, err := call.Do()
+			if err != nil {
+				return nil, err
+			}
+			op = resp
+		} else {
+			call := service.GlobalOperations.Get(project, op.Name)
+			resp, err := call.Do()
+			if err != nil {
+				return nil, err
+			}
+			op = resp
+		}
+	}
+	if op.Error != nil {
+		return nil, fmt.Errorf("operation error: %s", op.Error.Errors[0].Message)
 	}
 
-	dump = bytes.TrimSpace(dump)
-	dump = HideSecureHeaders(dump)
-	dump = util.IndentBytes(dump, []byte("    > "))
-	return string(dump)
-}
-
-func DumpResponse(r *http.Response) string {
-	dump, err := httputil.DumpResponse(r, true)
-	if err != nil {
-		log.WithField("Error", err).
-			Warnf("failed to dump HTTP response")
-		return ""
-	}
-
-	dump = bytes.TrimSpace(dump)
-	dump = util.IndentBytes(dump, []byte("    < "))
-	return string(dump)
+	return op, nil
 }
