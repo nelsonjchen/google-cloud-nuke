@@ -12,24 +12,23 @@ func init() {
 }
 
 type ComputeMachineImage struct {
-	service *compute.MachineImagesService
+	service *compute.Service
 	name    string
 	project string
 }
 
 func ListComputeMachineImages(p *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
-	computeService, err := compute.NewService(ctx)
+	service, err := compute.NewService(ctx)
 	if err != nil {
 		return nil, err
 	}
-	service := compute.NewMachineImagesService(computeService)
 
 	resources := make([]Resource, 0)
 
 	var pageToken string
 	for {
-		call := service.List(p.ID()).PageToken(pageToken)
+		call := service.MachineImages.List(p.ID()).PageToken(pageToken)
 
 		resp, err := call.Do()
 		if err != nil {
@@ -54,7 +53,11 @@ func ListComputeMachineImages(p *gcputil.Project) ([]Resource, error) {
 }
 
 func (r *ComputeMachineImage) Remove() error {
-	_, err := r.service.Delete(r.project, r.name).Do()
+	op, err := r.service.MachineImages.Delete(r.project, r.name).Do()
+	if err != nil {
+		return err
+	}
+	op, err = gcputil.ComputeRemoveWaiter(op, r.service, r.project)
 	if err != nil {
 		return err
 	}

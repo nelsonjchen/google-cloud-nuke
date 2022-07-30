@@ -13,7 +13,7 @@ func init() {
 }
 
 type ComputeInstanceGroup struct {
-	service *compute.InstanceGroupsService
+	service *compute.Service
 	name    string
 	project string
 	zone    string
@@ -22,17 +22,16 @@ type ComputeInstanceGroup struct {
 
 func ListComputeInstanceGroups(p *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
-	computeService, err := compute.NewService(ctx)
+	service, err := compute.NewService(ctx)
 	if err != nil {
 		return nil, err
 	}
-	service := compute.NewInstanceGroupsService(computeService)
 
 	resources := make([]Resource, 0)
 
 	var pageToken string
 	for {
-		call := service.AggregatedList(p.ID()).PageToken(pageToken)
+		call := service.InstanceGroups.AggregatedList(p.ID()).PageToken(pageToken)
 
 		resp, err := call.Do()
 		if err != nil {
@@ -66,7 +65,11 @@ func ListComputeInstanceGroups(p *gcputil.Project) ([]Resource, error) {
 }
 
 func (r *ComputeInstanceGroup) Remove() error {
-	_, err := r.service.Delete(r.project, r.zone, r.name).Do()
+	op, err := r.service.InstanceGroups.Delete(r.project, r.zone, r.name).Do()
+	if err != nil {
+		return err
+	}
+	op, err = gcputil.ComputeRemoveWaiter(op, r.service, r.project)
 	if err != nil {
 		return err
 	}

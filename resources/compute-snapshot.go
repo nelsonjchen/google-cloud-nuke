@@ -12,24 +12,23 @@ func init() {
 }
 
 type ComputeSnapshot struct {
-	service *compute.SnapshotsService
+	service *compute.Service
 	name    string
 	project string
 }
 
 func ListComputeSnapshots(p *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
-	computeService, err := compute.NewService(ctx)
+	service, err := compute.NewService(ctx)
 	if err != nil {
 		return nil, err
 	}
-	service := compute.NewSnapshotsService(computeService)
 
 	resources := make([]Resource, 0)
 
 	var pageToken string
 	for {
-		call := service.List(p.ID()).PageToken(pageToken)
+		call := service.Snapshots.List(p.ID()).PageToken(pageToken)
 
 		resp, err := call.Do()
 		if err != nil {
@@ -55,7 +54,11 @@ func ListComputeSnapshots(p *gcputil.Project) ([]Resource, error) {
 }
 
 func (r *ComputeSnapshot) Remove() error {
-	_, err := r.service.Delete(r.project, r.name).Do()
+	op, err := r.service.Snapshots.Delete(r.project, r.name).Do()
+	if err != nil {
+		return err
+	}
+	op, err = gcputil.ComputeRemoveWaiter(op, r.service, r.project)
 	if err != nil {
 		return err
 	}

@@ -14,7 +14,7 @@ func init() {
 }
 
 type ComputeResourcePolicy struct {
-	service *compute.ResourcePoliciesService
+	service *compute.Service
 	name    string
 	project string
 	region  string
@@ -22,17 +22,16 @@ type ComputeResourcePolicy struct {
 
 func ListComputeResourcePolicies(p *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
-	computeService, err := compute.NewService(ctx)
+	service, err := compute.NewService(ctx)
 	if err != nil {
 		return nil, err
 	}
-	service := compute.NewResourcePoliciesService(computeService)
 
 	resources := make([]Resource, 0)
 
 	var pageToken string
 	for {
-		call := service.AggregatedList(p.ID()).PageToken(pageToken)
+		call := service.ResourcePolicies.AggregatedList(p.ID()).PageToken(pageToken)
 
 		resp, err := call.Do()
 		if err != nil {
@@ -59,7 +58,11 @@ func ListComputeResourcePolicies(p *gcputil.Project) ([]Resource, error) {
 }
 
 func (r *ComputeResourcePolicy) Remove() error {
-	_, err := r.service.Delete(r.project, r.region, r.name).Do()
+	op, err := r.service.ResourcePolicies.Delete(r.project, r.region, r.name).Do()
+	if err != nil {
+		return err
+	}
+	op, err = gcputil.ComputeRemoveWaiter(op, r.service, r.project)
 	if err != nil {
 		return err
 	}
