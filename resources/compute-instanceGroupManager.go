@@ -16,6 +16,7 @@ type ComputeInstanceGroupManager struct {
 	service *compute.InstanceGroupManagersService
 	name    string
 	project string
+	region  string
 	zone    string
 }
 
@@ -38,13 +39,19 @@ func ListComputeInstanceGroupManagers(p *gcputil.Project) ([]Resource, error) {
 			return nil, err
 		}
 
-		for zone, items := range resp.Items {
+		for region, items := range resp.Items {
 			for _, item := range items.InstanceGroupManagers {
+				var zone string
+				if item.Zone != "" {
+					zone = path.Base(item.Zone)
+				}
+
 				resources = append(resources, &ComputeInstanceGroupManager{
 					service: service,
 					name:    item.Name,
 					project: p.ID(),
-					zone:    path.Base(zone),
+					region:  path.Base(region),
+					zone:    zone,
 				})
 
 			}

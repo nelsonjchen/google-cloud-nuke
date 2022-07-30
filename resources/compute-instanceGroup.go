@@ -17,6 +17,7 @@ type ComputeInstanceGroup struct {
 	name    string
 	project string
 	zone    string
+	region  string
 }
 
 func ListComputeInstanceGroups(p *gcputil.Project) ([]Resource, error) {
@@ -38,13 +39,19 @@ func ListComputeInstanceGroups(p *gcputil.Project) ([]Resource, error) {
 			return nil, err
 		}
 
-		for zone, items := range resp.Items {
+		for region, items := range resp.Items {
 			for _, item := range items.InstanceGroups {
+				var zone string
+				if item.Zone != "" {
+					zone = path.Base(item.Zone)
+				}
+
 				resources = append(resources, &ComputeInstanceGroup{
 					service: service,
 					name:    item.Name,
 					project: p.ID(),
-					zone:    path.Base(zone),
+					region:  path.Base(region),
+					zone:    zone,
 				})
 
 			}

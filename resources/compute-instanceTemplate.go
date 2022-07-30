@@ -62,6 +62,7 @@ func ListComputeInstanceTemplates(p *gcputil.Project) ([]Resource, error) {
 func (r *ComputeInstanceTemplates) Remove() error {
 	var op *compute.Operation
 	op, err := r.service.Delete(r.project, r.name).Do()
+
 	if e, ok := err.(*googleapi.Error); ok && e.Code == 404 {
 		// It was already gone, so we're good.
 		return nil
