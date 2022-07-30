@@ -3,6 +3,7 @@ package gcputil
 import (
 	"fmt"
 	"google.golang.org/api/compute/v1"
+	"path"
 	"regexp"
 	"time"
 )
@@ -37,14 +38,14 @@ func ComputeRemoveWaiter(op *compute.Operation, service *compute.Service, projec
 
 		// Refresh the operation
 		if op.Zone != "" {
-			call := service.ZoneOperations.Get(project, op.Zone, op.Name)
+			call := service.ZoneOperations.Get(project, path.Base(op.Zone), op.Name)
 			resp, err := call.Do()
 			if err != nil {
 				return nil, err
 			}
 			op = resp
 		} else if op.Region != "" {
-			call := service.RegionOperations.Get(project, op.Region, op.Name)
+			call := service.RegionOperations.Get(project, path.Base(op.Region), op.Name)
 			resp, err := call.Do()
 			if err != nil {
 				return nil, err
