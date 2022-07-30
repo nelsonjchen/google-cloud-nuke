@@ -38,13 +38,13 @@ func ListComputeInstances(p *gcputil.Project) ([]Resource, error) {
 			return nil, err
 		}
 
-		for zone, items := range resp.Items {
+		for _, items := range resp.Items {
 			for _, item := range items.Instances {
 				resource := &ComputeInstance{
 					service: service,
 					name:    item.Name,
 					project: p.ID(),
-					zone:    path.Base(zone),
+					zone:    path.Base(item.Zone),
 				}
 
 				for key, value := range item.Labels {
