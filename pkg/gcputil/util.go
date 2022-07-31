@@ -19,8 +19,12 @@ func HideSecureHeaders(dump []byte) []byte {
 // ComputeRemoveWaiter is a waiter for compute resources
 // It is used to wait for compute resource operation to be removed and will return an updated operation
 func ComputeRemoveWaiter(op *compute.Operation, service *compute.Service, project string) (*compute.Operation, error) {
+	if op.HTTPStatusCode == 404 {
+		return op, nil
+	}
+
 	runningCount := 0
-	runningCountLimit := 4
+	runningCountLimit := 2
 	for {
 		if op.Status == "DONE" {
 			break
@@ -60,6 +64,7 @@ func ComputeRemoveWaiter(op *compute.Operation, service *compute.Service, projec
 			op = resp
 		}
 	}
+
 	if op.Error != nil {
 		return nil, fmt.Errorf("operation error: %s", op.Error.Errors[0].Message)
 	}
