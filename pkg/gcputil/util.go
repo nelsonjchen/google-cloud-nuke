@@ -76,5 +76,5 @@ func Base(s string) string {
 	if s == "" {
 		return ""
 	}
-	return path.Base("")
+	return path.Base(s)
 }
