@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
 	"google.golang.org/api/compute/v1"
@@ -12,9 +13,10 @@ func init() {
 }
 
 type ComputeImage struct {
-	service *compute.Service
-	name    string
-	project string
+	service   *compute.Service
+	name      string
+	project   string
+	operation *compute.Operation
 }
 
 func ListComputeImages(p *gcputil.Project) ([]Resource, error) {
@@ -54,16 +56,33 @@ func ListComputeImages(p *gcputil.Project) ([]Resource, error) {
 }
 
 func (r *ComputeImage) Remove() error {
+	if r.operation != nil {
+		_, err := gcputil.ComputeRemoveWaiter(r.operation, r.service, r.project)
+		if err != nil {
+			// Try deleting again on next poll
+			r.operation = nil
+			return err
+		}
+		// Operation is done (resource already gone), pending or running
+		return nil
+	}
 	op, err := r.service.Images.Delete(r.project, r.name).Do()
 	if err != nil {
+		// It's already gone, that's great.
+		if op != nil {
+			if op.HTTPStatusCode == 404 {
+				return nil
+			}
+		}
 		return err
 	}
-	op, err = gcputil.ComputeRemoveWaiter(op, r.service, r.project)
-	if err != nil {
-		return err
+	r.operation = op
+
+	if op.Status == "RUNNING" || op.Status == "PENDING" {
+		return fmt.Errorf("operation is running")
 	}
 
-	return err
+	return nil
 }
 
 func (r *ComputeImage) Properties() types.Properties {
