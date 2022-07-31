@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	register("compute#autoscalers", ListComputeAutoscalers)
+	register("compute#autoscaler", ListComputeAutoscalers)
 }
 
 type ComputeAutoscaler struct {
