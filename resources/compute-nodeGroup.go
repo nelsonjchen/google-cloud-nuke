@@ -5,7 +5,6 @@ import (
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
 	"google.golang.org/api/compute/v1"
-	"path"
 )
 
 func init() {
@@ -37,13 +36,13 @@ func ListComputeNodeGroups(p *gcputil.Project) ([]Resource, error) {
 			return nil, err
 		}
 
-		for zone, items := range resp.Items {
+		for _, items := range resp.Items {
 			for _, item := range items.NodeGroups {
 				resources = append(resources, &ComputeNodeGroups{
 					service: service,
 					name:    item.Name,
 					project: p.ID(),
-					zone:    path.Base(zone),
+					zone:    gcputil.Base(item.Zone),
 				})
 			}
 		}
