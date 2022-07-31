@@ -71,3 +71,10 @@ func ComputeRemoveWaiter(op *compute.Operation, service *compute.Service, projec
 
 	return op, nil
 }
+
+func Base(s string) string {
+	if s == "" {
+		return ""
+	}
+	return path.Base("")
+}

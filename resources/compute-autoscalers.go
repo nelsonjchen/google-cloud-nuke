@@ -5,7 +5,6 @@ import (
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
 	"google.golang.org/api/compute/v1"
-	"path"
 )
 
 func init() {
@@ -17,6 +16,7 @@ type ComputeAutoscaler struct {
 	name    string
 	project string
 	zone    string
+	region  string
 }
 
 func ListComputeAutoscalers(p *gcputil.Project) ([]Resource, error) {
@@ -37,14 +37,14 @@ func ListComputeAutoscalers(p *gcputil.Project) ([]Resource, error) {
 			return nil, err
 		}
 
-		for zone, items := range resp.Items {
+		for _, items := range resp.Items {
 			for _, item := range items.Autoscalers {
-
 				resources = append(resources, &ComputeAutoscaler{
 					service: service,
 					name:    item.Name,
 					project: p.ID(),
-					zone:    path.Base(zone),
+					zone:    gcputil.Base(item.Zone),
+					region:  gcputil.Base(item.Region),
 				})
 
 			}
@@ -59,7 +59,14 @@ func ListComputeAutoscalers(p *gcputil.Project) ([]Resource, error) {
 }
 
 func (r *ComputeAutoscaler) Remove() error {
-	op, err := r.service.Autoscalers.Delete(r.project, r.zone, r.name).Do()
+	var op *compute.Operation
+	var err error
+	if r.zone != "" {
+		op, err = r.service.Autoscalers.Delete(r.project, r.zone, r.name).Do()
+	} else {
+		op, err = r.service.RegionAutoscalers.Delete(r.project, r.region, r.name).Do()
+	}
+
 	if err != nil {
 		return err
 	}
