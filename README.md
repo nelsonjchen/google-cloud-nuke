@@ -26,6 +26,18 @@ There may be more use cases as well.
 
 [aws-nuke]: https://github.com/rebuy-de/aws-nuke
 
+## Alternatives
+
+* Leftovers
+  * https://github.com/genevieve/leftovers
+  * Supports many clouds, not just GCP
+  * More polish with tests and probably better Go usage
+  * Does not support regional resources sometimes.
+
+## Blunt Differences from AWS-Nuke
+
+* Deletion happens at project level, not account level. Regions do not matter.
+
 *Original README follows until the project is more developed.*
 
 --- 
