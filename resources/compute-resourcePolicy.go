@@ -5,6 +5,7 @@ import (
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
 	"google.golang.org/api/compute/v1"
+	"google.golang.org/api/googleapi"
 	"path"
 )
 
@@ -60,6 +61,11 @@ func ListComputeResourcePolicies(p *gcputil.Project) ([]Resource, error) {
 func (r *ComputeResourcePolicy) Remove() error {
 	op, err := r.service.ResourcePolicies.Delete(r.project, r.region, r.name).Do()
 	if err != nil {
+		if err, ok := err.(*googleapi.Error); ok {
+			if err.Code == 404 {
+				return nil
+			}
+		}
 		return err
 	}
 	op, err = gcputil.ComputeRemoveWaiter(op, r.service, r.project)

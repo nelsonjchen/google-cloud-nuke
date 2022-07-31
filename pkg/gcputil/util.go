@@ -67,6 +67,9 @@ func ComputeRemoveWaiter(op *compute.Operation, service *compute.Service, projec
 	}
 
 	if op.Error != nil {
+		if op.HttpErrorStatusCode == 404 {
+			return op, nil
+		}
 		return nil, fmt.Errorf("operation error: %s", op.Error.Errors[0].Message)
 	}
 
