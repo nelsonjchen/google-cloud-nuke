@@ -5,7 +5,6 @@ import (
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/gcputil"
 	"github.com/nelsonjchen/google-cloud-nuke/v1/pkg/types"
 	"google.golang.org/api/compute/v1"
-	"path"
 )
 
 func init() {
@@ -38,19 +37,14 @@ func ListComputeInstanceGroupManagers(p *gcputil.Project) ([]Resource, error) {
 			return nil, err
 		}
 
-		for region, items := range resp.Items {
+		for _, items := range resp.Items {
 			for _, item := range items.InstanceGroupManagers {
-				var zone string
-				if item.Zone != "" {
-					zone = path.Base(item.Zone)
-				}
-
 				resources = append(resources, &ComputeInstanceGroupManager{
 					service: service,
 					name:    item.Name,
 					project: p.ID(),
-					region:  path.Base(region),
-					zone:    zone,
+					region:  gcputil.Base(item.Region),
+					zone:    gcputil.Base(item.Zone),
 				})
 
 			}
@@ -65,7 +59,13 @@ func ListComputeInstanceGroupManagers(p *gcputil.Project) ([]Resource, error) {
 }
 
 func (r *ComputeInstanceGroupManager) Remove() error {
-	op, err := r.service.InstanceGroupManagers.Delete(r.project, r.zone, r.name).Do()
+	var op *compute.Operation
+	var err error
+	if r.zone != "" {
+		op, err = r.service.InstanceGroupManagers.Delete(r.project, r.zone, r.name).Do()
+	} else {
+		op, err = r.service.RegionInstanceGroupManagers.Delete(r.project, r.region, r.name).Do()
+	}
 	if err != nil {
 		return err
 	}
