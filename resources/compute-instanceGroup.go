@@ -17,6 +17,7 @@ type ComputeInstanceGroup struct {
 	name    string
 	project string
 	zone    string
+	region  string
 }
 
 func ListComputeInstanceGroups(p *gcputil.Project) ([]Resource, error) {
@@ -44,6 +45,7 @@ func ListComputeInstanceGroups(p *gcputil.Project) ([]Resource, error) {
 					name:    item.Name,
 					project: p.ID(),
 					zone:    gcputil.Base(item.Zone),
+					region:  gcputil.Base(item.Region),
 				})
 
 			}
@@ -58,6 +60,12 @@ func ListComputeInstanceGroups(p *gcputil.Project) ([]Resource, error) {
 }
 
 func (r *ComputeInstanceGroup) Remove() error {
+	if r.zone == "" {
+		// Region Instance Groups aren't deletable
+		// Just wait for it to disappear
+		return nil
+	}
+
 	op, err := r.service.InstanceGroups.Delete(r.project, r.zone, r.name).Do()
 	if err != nil {
 		if err, ok := err.(*googleapi.Error); ok {
