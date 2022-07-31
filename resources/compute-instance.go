@@ -46,6 +46,7 @@ func ListComputeInstances(p *gcputil.Project) ([]Resource, error) {
 					name:    item.Name,
 					project: p.ID(),
 					zone:    path.Base(item.Zone),
+					labels:  map[string]string{},
 				}
 
 				for key, value := range item.Labels {
