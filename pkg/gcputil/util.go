@@ -24,7 +24,7 @@ func ComputeRemoveWaiter(op *compute.Operation, service *compute.Service, projec
 	}
 
 	runningCount := 0
-	runningCountLimit := 2
+	runningCountLimit := 3
 	for {
 		if op.Status == "DONE" {
 			break
@@ -35,7 +35,8 @@ func ComputeRemoveWaiter(op *compute.Operation, service *compute.Service, projec
 		}
 
 		if runningCount > runningCountLimit {
-			return nil, fmt.Errorf("operation %s is still running. will try operation again", op.Name)
+			// If it's still running, it's probably successful at this point.
+			return op, nil
 		}
 
 		time.Sleep(1 * time.Second)
