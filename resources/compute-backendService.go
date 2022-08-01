@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	register("compute#backendService", ListBackendService)
+	register("compute#backendService", ListComputeBackendService)
 }
 
 type ComputeBackendService struct {
@@ -19,7 +19,7 @@ type ComputeBackendService struct {
 	region  string
 }
 
-func ListBackendService(p *gcputil.Project) ([]Resource, error) {
+func ListComputeBackendService(p *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
 	service, err := compute.NewService(ctx)
 	if err != nil {
