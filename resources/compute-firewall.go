@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	register("compute#firewall", ListFirewalls)
+	register("compute#firewall", ListComputeFirewalls)
 }
 
 type ComputeFirewall struct {
@@ -19,7 +19,7 @@ type ComputeFirewall struct {
 	network string
 }
 
-func ListFirewalls(p *gcputil.Project) ([]Resource, error) {
+func ListComputeFirewalls(p *gcputil.Project) ([]Resource, error) {
 	ctx := context.Background()
 	service, err := compute.NewService(ctx)
 	if err != nil {
